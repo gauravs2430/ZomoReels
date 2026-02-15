@@ -43,6 +43,9 @@ const FoodPartnerLogin = () => {
 
                 <div className="auth-footer">
                     New partner? <Link to="/foodpartner/register" className="auth-link">Register your restaurant</Link>
+                    <Link to="/user/register" className="switch-role-link">
+                        Looking to order food? Register as User
+                    </Link>
                 </div>
             </div>
         </div>

@@ -7,6 +7,16 @@ const FoodPartnerRegister = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        // console.log('Restaurant Name:', restaurantName);
+        // console.log('Email:', email);
+        // console.log('Password:', password);
+
+         
+
+    };
+
     return (
         <div className="auth-container">
             <div className="auth-card">
@@ -14,7 +24,9 @@ const FoodPartnerRegister = () => {
                 <h2 className="auth-title">Partner Registration</h2>
                 <p className="auth-subtitle">Grow your business with us.</p>
 
-                <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
+                <form
+                
+                className="auth-form" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label className="form-label" htmlFor="restaurantName">Restaurant Name</label>
                         <input
@@ -56,6 +68,9 @@ const FoodPartnerRegister = () => {
 
                 <div className="auth-footer">
                     Already a partner? <Link to="/foodpartner/login" className="auth-link">Login</Link>
+                    <Link to="/user/register" className="switch-role-link">
+                        Looking to order food? Register as User
+                    </Link>
                 </div>
             </div>
         </div>

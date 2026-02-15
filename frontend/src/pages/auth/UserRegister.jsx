@@ -56,6 +56,9 @@ const UserRegister = () => {
 
                 <div className="auth-footer">
                     Already have an account? <Link to="/user/login" className="auth-link">Login</Link>
+                    <Link to="/foodpartner/register" className="switch-role-link">
+                        Are you a restaurant partner? Register here
+                    </Link>
                 </div>
             </div>
         </div>

@@ -1,41 +1,52 @@
 :root {
-    /* Light Mode Palette */
-    --color-primary: #ef4f5f;
-    /* Zomato Red-ish */
-    --color-primary-hover: #d63d4d;
-    --color-background: #ffffff;
-    --color-surface: #f8f8f8;
-    --color-text-primary: #1c1c1c;
-    --color-text-secondary: #696969;
-    --color-border: #e8e8e8;
-    --color-input-bg: #ffffff;
+    /* Light Mode Palette - Old Money Aesthetic */
+    --color-primary: #1E3D2F;
+    /* Deep Forest Green */
+    --color-primary-hover: #142920;
+    --color-background: #F9F7F2;
+    /* Cream/Alabaster */
+    --color-surface: #FFFFFF;
+    --color-text-primary: #1B1B1B;
+    /* Dark Charcoal */
+    --color-text-secondary: #5A5A5A;
+    --color-border: #D1D1D1;
+    --color-input-bg: #FFFFFF;
+    --color-accent: #D4AF37;
+    /* Muted Gold for accents if needed */
 
-    /* Generic Dimensions */
-    --border-radius-sm: 6px;
-    --border-radius-md: 10px;
-    --border-radius-lg: 16px;
+    /* Typography & Shape */
+    --border-radius-sm: 2px;
+    --border-radius-md: 4px;
+    /* Sharper corners */
+    --border-radius-lg: 8px;
+
     --spacing-xs: 4px;
     --spacing-sm: 8px;
     --spacing-md: 16px;
     --spacing-lg: 24px;
     --spacing-xl: 32px;
 
-    /* Shadows */
-    --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    /* Shadows - Subtle and refined */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        /* Dark Mode Palette */
-        --color-background: #121212;
-        --color-surface: #1e1e1e;
-        --color-text-primary: #ffffff;
-        --color-text-secondary: #aaaaaa;
-        --color-border: #333333;
-        --color-input-bg: #2c2c2c;
-        --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.3);
-        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+        /* Dark Mode Palette - Old Money Aesthetic */
+        --color-background: #0F1410;
+        /* Deep Black Green */
+        --color-surface: #1A2621;
+        --color-text-primary: #EAEAEA;
+        --color-text-secondary: #A0A0A0;
+        --color-border: #2C3E34;
+        --color-input-bg: #151E19;
+        --color-primary: #D4AF37;
+        /* Gold becomes primary in dark mode for contrast */
+        --color-primary-hover: #B5952F;
+
+        --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4);
+        --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.6);
     }
 }
 
@@ -43,8 +54,17 @@ body {
     background-color: var(--color-background);
     color: var(--color-text-primary);
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    transition: background-color 0.3s ease, color 0.3s ease;
+    font-family: "Georgia", "Times New Roman", serif;
+    /* Serif for that classic look, or a very clean sans */
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* Fallback for sans-serif components if needed */
+button,
+input,
+.sans-serif {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 * {

@@ -43,6 +43,9 @@ const UserLogin = () => {
 
                 <div className="auth-footer">
                     Don't have an account? <Link to="/user/register" className="auth-link">Sign up</Link>
+                    <Link to="/foodpartner/register" className="switch-role-link">
+                        Are you a restaurant partner? Register here
+                    </Link>
                 </div>
             </div>
         </div>

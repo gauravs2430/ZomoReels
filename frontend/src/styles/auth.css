@@ -5,6 +5,9 @@
     min-height: 100vh;
     padding: var(--spacing-md);
     background: var(--color-background);
+    background-image: radial-gradient(var(--color-border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    /* Subtle texture */
 }
 
 .auth-card {
@@ -114,11 +117,44 @@
 }
 
 .role-badge.user {
-    background-color: rgba(239, 79, 95, 0.1);
+    background-color: rgba(30, 61, 47, 0.1);
+    /* Forest Green tint */
     color: var(--color-primary);
+    border: 1px solid var(--color-primary);
 }
 
 .role-badge.partner {
-    background-color: rgba(33, 150, 243, 0.1);
-    color: #2196f3;
+    background-color: rgba(212, 175, 55, 0.1);
+    /* Gold tint */
+    color: #bfa040;
+    /* Slightly darker gold for text visibility on light */
+    border: 1px solid #d4af37;
+}
+
+@media (prefers-color-scheme: dark) {
+    .role-badge.user {
+        color: #8fbc8f;
+        /* Dark sea green */
+        border-color: #8fbc8f;
+    }
+
+    .role-badge.partner {
+        color: var(--color-primary);
+        border-color: var(--color-primary);
+    }
+}
+
+.switch-role-link {
+    display: block;
+    margin-top: var(--spacing-sm);
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    cursor: pointer;
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--spacing-md);
+}
+
+.switch-role-link:hover {
+    color: var(--color-primary);
 }
