@@ -98,8 +98,12 @@ async function registerFoodpartner(req, res) {
 
     const {
         fullname,
+        contactName,
+        phone,
+        address,
         email,
-        password
+        password,
+
     } = req.body;
 
     const isFoodPartnerAlreadyExists = await foodpartnerModel.findOne({
@@ -116,6 +120,9 @@ async function registerFoodpartner(req, res) {
 
     const foodpartner = await foodpartnerModel.create({
         fullname,
+        contactName,
+        phone,
+        address,
         email,
         password: hashedPasswordFP
     });
@@ -131,6 +138,9 @@ async function registerFoodpartner(req, res) {
         foodpartner: {
             _id: foodpartner._id,
             fullname: foodpartner.fullname,
+            contactName,
+            phone,
+            address,
             email: foodpartner.email
         }
     })
@@ -166,8 +176,8 @@ async function loginFoodpartner(req, res) {
         process.env.JWT_SECRET
     );
     res.cookie("token", token);
-    
-    
+
+
     res.status(200).json({
         message: "User Logged In sucessfully",
         foodpartner: {

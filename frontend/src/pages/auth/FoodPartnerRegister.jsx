@@ -3,18 +3,21 @@ import { Link } from 'react-router-dom';
 import '../../styles/auth.css';
 
 const FoodPartnerRegister = () => {
-    const [restaurantName, setRestaurantName] = useState('');
+    const [fullname, setFullname] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [contactName, setContactName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [address, setAddress] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // console.log('Restaurant Name:', restaurantName);
+        // console.log('Full Name:', fullname);
         // console.log('Email:', email);
         // console.log('Password:', password);
-
-         
-
+        // console.log('Contact Name:', contactName);
+        // console.log('Phone:', phone);
+        // console.log('Address:', address);
     };
 
     return (
@@ -24,18 +27,16 @@ const FoodPartnerRegister = () => {
                 <h2 className="auth-title">Partner Registration</h2>
                 <p className="auth-subtitle">Grow your business with us.</p>
 
-                <form
-                
-                className="auth-form" onSubmit={handleSubmit}>
+                <form className="auth-form" onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label className="form-label" htmlFor="restaurantName">Restaurant Name</label>
+                        <label className="form-label" htmlFor="fullname">Restaurant Full Name</label>
                         <input
                             type="text"
-                            id="restaurantName"
+                            id="fullname"
                             className="form-input"
                             placeholder="Enter restaurant name"
-                            value={restaurantName}
-                            onChange={(e) => setRestaurantName(e.target.value)}
+                            value={fullname}
+                            onChange={(e) => setFullname(e.target.value)}
                         />
                     </div>
 
@@ -60,6 +61,42 @@ const FoodPartnerRegister = () => {
                             placeholder="Create a password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="contactName">Contact Person Name</label>
+                        <input
+                            type="text"
+                            id="contactName"
+                            className="form-input"
+                            placeholder="Enter contact person name"
+                            value={contactName}
+                            onChange={(e) => setContactName(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="phone">Phone Number</label>
+                        <input
+                            type="tel"
+                            id="phone"
+                            className="form-input"
+                            placeholder="Enter phone number"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="address">Address</label>
+                        <input
+                            type="text"
+                            id="address"
+                            className="form-input"
+                            placeholder="Enter restaurant address"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
                         />
                     </div>
 
