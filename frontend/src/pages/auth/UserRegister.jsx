@@ -1,11 +1,37 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/auth.css';
+import axios from 'axios';
+
 
 const UserRegister = () => {
-    const [name, setName] = useState('');
+    const [fullname, setFullname] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+
+    const handleSubmit = async (e)=>{
+        e.preventDefault();
+        
+        try{
+            await axios.post("http://localhost:3002/api/auth/user/register" , {
+                fullname , 
+                email ,
+                password
+            })
+
+            setFullname("")
+            setEmail("")
+            setPassword("")
+        }
+        catch (err){
+            // console.log( "Error" , err );
+
+            setFullname("")
+            setEmail("")
+            setPassword("")
+        }
+
+    }
 
     return (
         <div className="auth-container">
@@ -14,7 +40,7 @@ const UserRegister = () => {
                 <h2 className="auth-title">Create Account</h2>
                 <p className="auth-subtitle">Sign up to start your food journey.</p>
 
-                <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
+                <form className="auth-form" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label className="form-label" htmlFor="name">Full Name</label>
                         <input
@@ -22,8 +48,8 @@ const UserRegister = () => {
                             id="name"
                             className="form-input"
                             placeholder="Enter your full name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            value={fullname}
+                            onChange={(e) => setFullname(e.target.value)}
                         />
                     </div>
 
