@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/auth.css';
 import axios from 'axios';
-
+import {useNavigate} from 'react-router-dom';
 
 const UserRegister = () => {
     const [fullname, setFullname] = useState('');
@@ -11,13 +11,17 @@ const UserRegister = () => {
 
     const handleSubmit = async (e)=>{
         e.preventDefault();
-        
+        const navigate = useNavigate() ;
+
         try{
-            await axios.post("http://localhost:3002/api/auth/user/register" , {
+            const response = await axios.post("http://localhost:3002/api/auth/user/register" , {
                 fullname , 
                 email ,
                 password
             })
+
+            console.log(response.data);
+
 
             setFullname("")
             setEmail("")
@@ -30,6 +34,9 @@ const UserRegister = () => {
             setEmail("")
             setPassword("")
         }
+
+        navigate("/");
+        
 
     }
 
