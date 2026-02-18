@@ -101,8 +101,7 @@ async function registerFoodpartner(req, res) {
         contactName,
         phone,
         address,
-       
-
+        
     } = req.body;
 
     const isFoodPartnerAlreadyExists = await foodpartnerModel.findOne({

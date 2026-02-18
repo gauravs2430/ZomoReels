@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/auth.css';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
 
 const FoodPartnerRegister = () => {
+
+    const navigate = useNavigate();
+
+
     const [fullname, setFullname] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -44,6 +51,8 @@ const FoodPartnerRegister = () => {
         catch(err){
             console.log("Error" , err);
         };
+
+        navigate('/foodpartner/Home');
     };
 
     return (

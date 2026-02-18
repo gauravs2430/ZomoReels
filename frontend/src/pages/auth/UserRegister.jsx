@@ -40,7 +40,7 @@ const UserRegister = () => {
             setPassword("")
         }
 
-        navigate("/");
+        navigate("/user/Home");
     }
 
     return (

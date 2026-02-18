@@ -1,9 +1,11 @@
 import React from "react";
 
-const Home = ()=> {
+const FoodPartnerHome = ()=> {
     return (
         <>
         
         </>
     )
 }
+
+export default FoodPartnerHome;

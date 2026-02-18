@@ -10,7 +10,6 @@ const UserLogin = () => {
 
     const navigate = useNavigate();
 
-
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -39,6 +38,8 @@ const UserLogin = () => {
             console.log("Error" , err);
         };
 
+        navigate('/user/Home');
+        
     }
 
     return (
