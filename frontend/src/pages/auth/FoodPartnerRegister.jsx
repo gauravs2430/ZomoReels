@@ -19,7 +19,7 @@ const FoodPartnerRegister = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         setFullname(e.target.fullname.value);
         setEmail(e.target.email.value);
         setPassword(e.target.password.value);
@@ -27,15 +27,17 @@ const FoodPartnerRegister = () => {
         setPhone(e.target.phone.value);
         setAddress(e.target.address.value);
 
-        try{
-            const response = await axios.post("http://localhost:3002/api/auth/foodpartner/register" , {
-                fullname , 
-                email ,
-                password ,
-                contactName ,
-                phone , 
+        console.log(fullname, email, password, contactName, phone, address);
+
+        try {
+            const response = await axios.post("http://localhost:3002/api/auth/foodpartner/register", {
+                fullname,
+                email,
+                password,
+                contactName,
+                phone,
                 address
-            } ,{
+            }, {
                 withCredentials: true
             })
 
@@ -49,13 +51,13 @@ const FoodPartnerRegister = () => {
             setAddress("");
 
             navigate('/foodpartner/Home');
-            
+
         }
-        catch(err){
-            console.log("Error" , err);
+        catch (err) {
+            console.log("Error", err);
         };
 
-        
+
     };
 
     return (

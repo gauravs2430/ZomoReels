@@ -22,8 +22,8 @@ const UserRegister = () => {
                 fullname: name,
                 email,
                 password
-            } , {
-                withCredentials: true 
+            }, {
+                withCredentials: true
             })
 
             console.log(response.data);
@@ -33,17 +33,15 @@ const UserRegister = () => {
             setPassword("")
 
             navigate("/user/Home");
-            
+
         }
         catch (err) {
-            // console.log( "Error" , err );
+            console.log("Error", err);
 
             setName("")
             setEmail("")
             setPassword("")
         }
-
-        navigate("/user/Home");
     }
 
     return (

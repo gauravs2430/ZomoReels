@@ -9,41 +9,41 @@ const FoodPartnerLogin = () => {
 
     const navigate = useNavigate();
 
-
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleSubmit = async (e) =>{
+    const handleSubmit = async (e) => {
 
         e.preventDefault();
 
-        setEmail(e.target.email.value);
-        setPassword(e.target.password.value);
+
 
         try {
-            
+
+            console.log("Submitting login...");
+
             const response = await axios.post("http://localhost:3002/api/auth/foodpartner/login", {
-                email ,
-                password 
-            } , {
+                email,
+                password
+            }, {
                 withCredentials: true
             })
 
-            // console.log(response.data);
+            console.log("Login Response:", response.data);
 
             setEmail("");
             setPassword("");
 
             navigate('/foodpartner/Home');
-            
+
         } catch (error) {
-            console.log("Error" , error);
+            console.log("Error", error);
         };
 
     }
 
 
-    
+
 
     return (
         <div className="auth-container">
@@ -52,7 +52,7 @@ const FoodPartnerLogin = () => {
                 <h2 className="auth-title">Partner Login</h2>
                 <p className="auth-subtitle">Manage your restaurant and orders.</p>
 
-                <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
+                <form className="auth-form" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label className="form-label" htmlFor="email">Business Email</label>
                         <input

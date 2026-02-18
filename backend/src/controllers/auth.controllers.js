@@ -101,7 +101,7 @@ async function registerFoodpartner(req, res) {
         contactName,
         phone,
         address,
-        
+
     } = req.body;
 
     const isFoodPartnerAlreadyExists = await foodpartnerModel.findOne({
@@ -110,7 +110,7 @@ async function registerFoodpartner(req, res) {
 
     if (isFoodPartnerAlreadyExists) {
         return res.status(400).json({
-            message: "User already exists"
+            message: "Restaurant partner already exists"
         })
     }
 
@@ -164,7 +164,7 @@ async function loginFoodpartner(req, res) {
     const isPassMatches = await bcrypt.compare(password, foodpartner.password)
 
     if (!isPassMatches) {
-        res.status(400).json({
+        return res.status(400).json({
             message: "Invalid Email or password"
         })
     }

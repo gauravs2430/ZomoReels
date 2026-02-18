@@ -13,19 +13,19 @@ const UserLogin = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleSubmit = async (e)=>{
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         setEmail(e.target.email.value);
         setPassword(e.target.password.value);
 
 
-        try{    
+        try {
 
-            const response = await axios.post("http://localhost:3002/api/auth/user/login" , {
+            const response = await axios.post("http://localhost:3002/api/auth/user/login", {
                 email,
                 password
-            } , {
+            }, {
                 withCredentials: true
             });
 
@@ -35,14 +35,15 @@ const UserLogin = () => {
             setPassword("");
 
             navigate('/user/Home');
-            
+
         }
-        catch (err){
-            console.log("Error" , err);
+        catch (err) {
+            console.log("Error", err);
+            setPassword("");
         };
 
-        
-        
+
+
     }
 
     return (
