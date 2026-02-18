@@ -22,14 +22,14 @@ const FoodPartnerLogin = () => {
 
         try {
             
-            const response = await axios.post("http://localhost:3002/api/auth//foodpartner/login", {
+            const response = await axios.post("http://localhost:3002/api/auth/foodpartner/login", {
                 email ,
                 password 
             } , {
                 withCredentials: true
             })
 
-            console.log(response.data);
+            // console.log(response.data);
 
             setEmail("");
             setPassword("");

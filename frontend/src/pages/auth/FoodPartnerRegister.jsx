@@ -28,7 +28,7 @@ const FoodPartnerRegister = () => {
         setAddress(e.target.address.value);
 
         try{
-            const response = await axios.post("http://localhost:3002/api/auth//foodpartner/register" , {
+            const response = await axios.post("http://localhost:3002/api/auth/foodpartner/register" , {
                 fullname , 
                 email ,
                 password ,
