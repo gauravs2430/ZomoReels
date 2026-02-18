@@ -96,11 +96,12 @@ async function registerFoodpartner(req, res) {
 
     const {
         fullname,
+        email,
+        password,
         contactName,
         phone,
         address,
-        email,
-        password,
+       
 
     } = req.body;
 

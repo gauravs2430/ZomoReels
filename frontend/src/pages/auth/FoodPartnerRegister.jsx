@@ -10,14 +10,40 @@ const FoodPartnerRegister = () => {
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // console.log('Full Name:', fullname);
-        // console.log('Email:', email);
-        // console.log('Password:', password);
-        // console.log('Contact Name:', contactName);
-        // console.log('Phone:', phone);
-        // console.log('Address:', address);
+        
+        setFullname(e.target.fullname.value);
+        setEmail(e.target.email.value);
+        setPassword(e.target.password.value);
+        setContactName(e.target.contactName.value);
+        setPhone(e.target.phone.value);
+        setAddress(e.target.address.value);
+
+        try{
+            const response = await axios.post("http://localhost:3002/api/auth//foodpartner/register" , {
+                fullname , 
+                email ,
+                password ,
+                contactName ,
+                phone , 
+                address
+            } ,{
+                withCredentials: true
+            })
+
+            console.log(response.data);
+
+            setFullname("");
+            setEmail("");
+            setPassword("");
+            setContactName("");
+            setPhone("");
+            setAddress("");
+        }
+        catch(err){
+            console.log("Error" , err);
+        };
     };
 
     return (
