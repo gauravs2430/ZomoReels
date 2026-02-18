@@ -43,20 +43,18 @@ async function registerUser(req, res) {
             fullname: user.fullname
         }
     });
-
 }
 
 async function loginUser(req, res) {
 
     const {
-        fullname,
         email,
         password
     } = req.body;
 
     const user = await userModel.findOne({
         email
-    })
+    });
 
     if (!user) {
         return res.status(400).json({
@@ -67,7 +65,7 @@ async function loginUser(req, res) {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-        res.status(400).json({
+        return res.status(400).json({
             message: "Invalid Email or password"
         })
     }

@@ -1,10 +1,45 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/auth.css';
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom';
+
+
 
 const UserLogin = () => {
+
+    const navigate = useNavigate();
+
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+
+    const handleSubmit = async (e)=>{
+        e.preventDefault();
+
+        setEmail(e.target.email.value);
+        setPassword(e.target.password.value);
+
+
+        try{    
+
+            const response = await axios("http://localhost:3002/api/auth/user/login" , {
+                email,
+                password
+            } , {
+                withCredentials: true
+            });
+
+            console.log(response.data);
+
+            setEmail("");
+            setPassword("");
+        }
+        catch (err){
+            console.log("Error" , err);
+        };
+
+    }
 
     return (
         <div className="auth-container">
@@ -13,7 +48,7 @@ const UserLogin = () => {
                 <h2 className="auth-title">Welcome Back</h2>
                 <p className="auth-subtitle">Login to continue ordering delicious food.</p>
 
-                <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
+                <form className="auth-form" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label className="form-label" htmlFor="email">Email</label>
                         <input
