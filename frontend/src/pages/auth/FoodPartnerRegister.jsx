@@ -47,12 +47,15 @@ const FoodPartnerRegister = () => {
             setContactName("");
             setPhone("");
             setAddress("");
+
+            navigate('/foodpartner/Home');
+            
         }
         catch(err){
             console.log("Error" , err);
         };
 
-        navigate('/foodpartner/Home');
+        
     };
 
     return (

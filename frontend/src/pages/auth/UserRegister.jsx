@@ -31,6 +31,9 @@ const UserRegister = () => {
             setName("")
             setEmail("")
             setPassword("")
+
+            navigate("/user/Home");
+            
         }
         catch (err) {
             // console.log( "Error" , err );

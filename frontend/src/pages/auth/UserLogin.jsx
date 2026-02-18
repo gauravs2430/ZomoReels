@@ -33,12 +33,15 @@ const UserLogin = () => {
 
             setEmail("");
             setPassword("");
+
+            navigate('/user/Home');
+            
         }
         catch (err){
             console.log("Error" , err);
         };
 
-        navigate('/user/Home');
+        
         
     }
 

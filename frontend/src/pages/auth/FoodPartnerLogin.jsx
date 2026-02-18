@@ -1,10 +1,49 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/auth.css';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
 
 const FoodPartnerLogin = () => {
+
+    const navigate = useNavigate();
+
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+
+    const handleSubmit = async (e) =>{
+
+        e.preventDefault();
+
+        setEmail(e.target.email.value);
+        setPassword(e.target.password.value);
+
+        try {
+            
+            const response = await axios.post("http://localhost:3002/api/auth//foodpartner/login", {
+                email ,
+                password 
+            } , {
+                withCredentials: true
+            })
+
+            console.log(response.data);
+
+            setEmail("");
+            setPassword("");
+
+            navigate('/foodpartner/Home');
+            
+        } catch (error) {
+            console.log("Error" , error);
+        };
+
+    }
+
+
+    
 
     return (
         <div className="auth-container">
