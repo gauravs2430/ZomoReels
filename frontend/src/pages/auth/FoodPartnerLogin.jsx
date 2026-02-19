@@ -19,15 +19,12 @@ const FoodPartnerLogin = () => {
 
 
         try {
-
-            console.log("Submitting login...");
-
             const response = await axios.post("http://localhost:3002/api/auth/foodpartner/login", {
                 email,
                 password
             }, {
                 withCredentials: true
-            })
+            });
 
             console.log("Login Response:", response.data);
 
@@ -37,14 +34,12 @@ const FoodPartnerLogin = () => {
             navigate('/foodpartner/Home');
 
         } catch (error) {
-            console.log("Error", error);
+            console.log("Error", error.response.data);
         };
 
     }
 
-
-
-
+    
     return (
         <div className="auth-container">
             <div className="auth-card">

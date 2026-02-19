@@ -12,7 +12,7 @@ async function fileUpload(file, filename) {
 
     const result = await imagekit.upload({
         file: file.toString("base64"),
-        fileName: filename,
+        fileName: filename + ".mp4",
     });
 
     return result;

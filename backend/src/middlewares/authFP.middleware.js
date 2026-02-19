@@ -19,6 +19,7 @@ async function authFoodPartnerMiddleware(req, res, next) {
         req.foodpartner = foodpartner;
         next();
     }
+    
     catch (err) {
         return res.status(400).json({
             message: "Invalid token"

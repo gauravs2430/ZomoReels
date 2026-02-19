@@ -16,6 +16,7 @@ router.post("/addItem" , authMiddleware.authFoodPartnerMiddleware , upload.singl
 //secure route just like addItem but for a user not for foodpartner.
 router.get('/getItem' , authMiddleware.authUserMiddleware , foodControllers.getFoodItem);
 
+router.get("/getFoodpartnerItems" , authMiddleware.authFoodPartnerMiddleware , foodControllers.getFoodpartnerItems )
 
 
 module.exports = router;
