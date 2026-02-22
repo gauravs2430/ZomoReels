@@ -55,6 +55,7 @@ const FoodPartnerHome = () => {
     // Form States
     const [foodName, setFoodName] = useState("");
     const [description, setDescription] = useState("");
+    const [tags, setTags] = useState("");
     const [videoFile, setVideoFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadStatus, setUploadStatus] = useState(null); // 'success', 'error'
@@ -76,6 +77,9 @@ const FoodPartnerHome = () => {
         formData.append("foodname", foodName);
         formData.append("description", description);
         formData.append("video", videoFile);
+        if (tags) {
+            formData.append("tags", tags);
+        }
 
         setIsUploading(true);
         setUploadStatus(null);
@@ -89,6 +93,7 @@ const FoodPartnerHome = () => {
             setUploadStatus('success');
             setFoodName("");
             setDescription("");
+            setTags("");
             setVideoFile(null);
             // clear success message after 3 seconds
             setTimeout(() => setUploadStatus(null), 3000);
@@ -207,6 +212,17 @@ const FoodPartnerHome = () => {
                                 onChange={(e) => setDescription(e.target.value)}
                                 placeholder="Tell us about this dish..."
                                 rows="3"
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label>Tags (Optional)</label>
+                            <input
+                                type="text"
+                                className="form-input"
+                                value={tags}
+                                onChange={(e) => setTags(e.target.value)}
+                                placeholder="e.g., spicy, vegan, dessert"
                             />
                         </div>
 

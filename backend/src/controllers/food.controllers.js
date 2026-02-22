@@ -19,11 +19,17 @@ async function createFood(req, res) {
         uuid()
     );
 
+    let tagsArray = [];
+    if (req.body.tags) {
+        tagsArray = req.body.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+    }
+
     const foodItem = await foodModel.create({
         foodname: req.body.foodname,
         description: req.body.description,
         video: fileUploadResult.url,
-        foodpartner: req.foodpartner._id
+        foodpartner: req.foodpartner._id,
+        tags: tagsArray
     })
 
     return res.status(201).json({
@@ -56,18 +62,18 @@ async function getFoodpartnerItems(req, res) {
             videos
         })
     }
-    catch(err){
+    catch (err) {
         return res.status(400).json({
             message: "Fetching failed"
         })
     }
 
-    
+
 }
 
 module.exports = {
     createFood,
     getFoodItem,
-    getFoodpartnerItems 
+    getFoodpartnerItems
 
 }

@@ -1,24 +1,19 @@
 :root {
-    /* Light Mode Palette - Old Money Aesthetic */
-    --color-primary: #1E3D2F;
-    /* Deep Forest Green */
-    --color-primary-hover: #142920;
-    --color-background: #F9F7F2;
-    /* Cream/Alabaster */
+    /* Light Mode Palette - CHOMP Aesthetic */
+    --color-primary: #FF5A36; /* Vibrant orange */
+    --color-primary-hover: #E84D2E;
+    --color-background: #F4F1E1; /* Cream/Alabaster */
     --color-surface: #FFFFFF;
-    --color-text-primary: #1B1B1B;
-    /* Dark Charcoal */
+    --color-text-primary: #1A1A1A; /* Dark Charcoal */
     --color-text-secondary: #5A5A5A;
-    --color-border: #D1D1D1;
+    --color-border: #E0E0E0;
     --color-input-bg: #FFFFFF;
-    --color-accent: #D4AF37;
-    /* Muted Gold for accents if needed */
+    --color-accent: #FF5A36;
 
-    /* Typography & Shape */
-    --border-radius-sm: 2px;
-    --border-radius-md: 4px;
-    /* Sharper corners */
-    --border-radius-lg: 8px;
+    /* Typography & Shape - Sharp */
+    --border-radius-sm: 0px;
+    --border-radius-md: 0px; 
+    --border-radius-lg: 2px; /* Very subtle if any */
 
     --spacing-xs: 4px;
     --spacing-sm: 8px;
@@ -26,27 +21,26 @@
     --spacing-lg: 24px;
     --spacing-xl: 32px;
 
-    /* Shadows - Subtle and refined */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    /* Shadows - Stark, solid offset */
+    --shadow-sm: 2px 2px 0px rgba(0, 0, 0, 1);
+    --shadow-md: 4px 4px 0px rgba(0, 0, 0, 1);
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        /* Dark Mode Palette - Old Money Aesthetic */
-        --color-background: #0F1410;
-        /* Deep Black Green */
-        --color-surface: #1A2621;
-        --color-text-primary: #EAEAEA;
+        /* Dark Mode Palette - CHOMP Aesthetic */
+        --color-background: #121212; 
+        --color-surface: #1E1E1E;
+        --color-text-primary: #F4F1E1;
         --color-text-secondary: #A0A0A0;
-        --color-border: #2C3E34;
-        --color-input-bg: #151E19;
-        --color-primary: #D4AF37;
-        /* Gold becomes primary in dark mode for contrast */
-        --color-primary-hover: #B5952F;
+        --color-border: #333333;
+        --color-input-bg: #1A1A1A;
+        --color-primary: #FF5A36;
+        --color-primary-hover: #E84D2E;
 
-        --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4);
-        --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.6);
+        /* Solid shadows in dark mode for pop */
+        --shadow-sm: 2px 2px 0px rgba(255, 90, 54, 1);
+        --shadow-md: 4px 4px 0px rgba(255, 90, 54, 1);
     }
 }
 
@@ -54,17 +48,15 @@ body {
     background-color: var(--color-background);
     color: var(--color-text-primary);
     margin: 0;
-    font-family: "Georgia", "Times New Roman", serif;
-    /* Serif for that classic look, or a very clean sans */
+    font-family: 'Outfit', 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     transition: background-color 0.4s ease, color 0.4s ease;
 }
 
-/* Fallback for sans-serif components if needed */
 button,
 input,
 .sans-serif {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Outfit', 'Inter', system-ui, sans-serif;
 }
 
 * {

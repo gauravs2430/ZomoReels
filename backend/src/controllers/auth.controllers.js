@@ -194,6 +194,14 @@ function logoutFoodpartner(req, res) {
     })
 }
 
+async function getAllFoodpartners(req, res) {
+    try {
+        const partners = await foodpartnerModel.find({}, 'fullname contactName phone address');
+        res.status(200).json({ partners });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch food partners" });
+    }
+}
 
 module.exports = {
     registerUser,
@@ -202,5 +210,6 @@ module.exports = {
 
     registerFoodpartner,
     loginFoodpartner,
-    logoutFoodpartner
+    logoutFoodpartner,
+    getAllFoodpartners
 }
