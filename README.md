@@ -406,4 +406,3 @@ npm run dev
 
 ---
 
-<p align="center">Built with ❤️ by Gaurav &nbsp;|&nbsp; Powered by React, Express & MongoDB</p>
