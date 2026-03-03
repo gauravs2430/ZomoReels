@@ -1,4 +1,4 @@
-<h1 align="center">🍔 ReelFood</h1>
+<h1 align="center">🍔 ZOMOREELS</h1>
 <h3 align="center">A Zomato-Inspired Full-Stack Food Discovery Platform with Reel-Style Short Video Feed</h3>
 
 <p align="center">
@@ -15,7 +15,7 @@
 
 ## 📖 What Is This Project?
 
-**ReelFood** is a full-stack food discovery web app built from scratch, inspired by Zomato's restaurant discovery experience combined with the short-video feed concept from Instagram Reels / TikTok.
+**ZOMOREELS** is a full-stack food discovery web app built from scratch, inspired by Zomato's restaurant discovery experience combined with the short-video feed concept from Instagram Reels / TikTok.
 
 The core idea: instead of browsing a static food menu, users scroll through **full-screen short video reels** of food items uploaded by restaurants — making food discovery more visual and engaging.
 
