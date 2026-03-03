@@ -5,7 +5,7 @@ const connectDB = require("./src/db/db")
 
 connectDB();
 
-const PORT = process.env.PORT || 3050;  
+const PORT = process.env.PORT || 3002;  
 
 app.listen(PORT , ()=>{
     console.log(`Server is listning on ${PORT}`);
