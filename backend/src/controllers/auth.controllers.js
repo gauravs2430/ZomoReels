@@ -2,6 +2,8 @@ const userModel = require("../models/user.models");
 const foodpartnerModel = require("../models/foodpartner.models");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const storageServices = require("../services/storage.services");
+const { v4: uuid } = require("uuid");
 
 
 
@@ -196,10 +198,33 @@ function logoutFoodpartner(req, res) {
 
 async function getAllFoodpartners(req, res) {
     try {
-        const partners = await foodpartnerModel.find({}, 'fullname contactName phone address');
+        const partners = await foodpartnerModel.find({}, 'fullname contactName phone address image');
         res.status(200).json({ partners });
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch food partners" });
+    }
+}
+
+async function updateFoodpartnerImage(req, res) {
+    if (!req.file) {
+        return res.status(400).json({ message: "Image file is required" });
+    }
+
+    try {
+        const fileUploadResult = await storageServices.imageUpload(req.file.buffer, uuid());
+
+        const updatedPartner = await foodpartnerModel.findByIdAndUpdate(
+            req.foodpartner._id,
+            { image: fileUploadResult.url },
+            { new: true }
+        );
+
+        return res.status(200).json({
+            message: "Image uploaded successfully",
+            image: updatedPartner.image
+        });
+    } catch (error) {
+        return res.status(500).json({ message: "Image upload failed: " + error.message });
     }
 }
 
@@ -211,5 +236,6 @@ module.exports = {
     registerFoodpartner,
     loginFoodpartner,
     logoutFoodpartner,
-    getAllFoodpartners
+    getAllFoodpartners,
+    updateFoodpartnerImage
 }

@@ -1,6 +1,11 @@
 const express = require("express");
 const authController = require("../controllers/auth.controllers");
+const authMiddleware = require("../middlewares/authFP.middleware");
+const multer = require("multer");
 
+const upload = multer({
+    storage: multer.memoryStorage(),
+});
 
 const router = express.Router();
 
@@ -14,6 +19,7 @@ router.get("/user/logout", authController.logoutUser);
 router.post("/foodpartner/register", authController.registerFoodpartner);
 router.post("/foodpartner/login", authController.loginFoodpartner);
 router.get("/foodpartner/logout", authController.logoutFoodpartner);
+router.post("/foodpartner/image", authMiddleware.authFoodPartnerMiddleware, upload.single("image"), authController.updateFoodpartnerImage);
 router.get("/foodpartners", authController.getAllFoodpartners);
 
 module.exports = router;

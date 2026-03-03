@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/landing.css';
 
+
 const LandingPage = () => {
     const navigate = useNavigate();
     const [restaurants, setRestaurants] = useState([]);
@@ -59,8 +60,8 @@ const LandingPage = () => {
                     ) : (
                         filteredRestaurants.map(rest => (
                             <div key={rest._id} className="restaurant-card">
-                                {/* Using a placeholder background image if no dedicated image exists yet */}
-                                <div className="card-bg" style={{ backgroundImage: `url(https://source.unsplash.com/600x400/?restaurant,food&sig=${rest._id})` }}>
+                                {/* Display actual restaurant background image or fallback if not available */}
+                                <div className="card-bg" style={{ backgroundImage: `url(${rest.image || `https://source.unsplash.com/600x400/?restaurant,food&sig=${rest._id}`})` }}>
                                     <div className="card-overlay">
                                         <h3 className="card-restaurant-name">{rest.fullname}</h3>
                                         <p className="card-contact">📞 {rest.phone}</p>
