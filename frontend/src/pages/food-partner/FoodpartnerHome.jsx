@@ -90,7 +90,7 @@ const FoodPartnerHome = () => {
         setUploadStatus(null);
 
         try {
-            const response = await axios.post("http://localhost:3002/api/food/addItem", formData, {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/food/addItem`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
                 withCredentials: true
             });
@@ -130,7 +130,7 @@ const FoodPartnerHome = () => {
         setImageUploadStatus(null);
 
         try {
-            const response = await axios.post("http://localhost:3002/api/auth/foodpartner/image", formData, {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/foodpartner/image`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
                 withCredentials: true
             });
@@ -148,7 +148,7 @@ const FoodPartnerHome = () => {
 
     const fetchMyReels = async () => {
         try {
-            const response = await axios.get("http://localhost:3002/api/food/getFoodpartnerItems", {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/food/getFoodpartnerItems`, {
                 withCredentials: true
             });
             if (response.data && response.data.videos) {

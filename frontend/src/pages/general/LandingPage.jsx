@@ -12,7 +12,7 @@ const LandingPage = () => {
     useEffect(() => {
         const fetchRestaurants = async () => {
             try {
-                const response = await axios.get("http://localhost:3002/api/auth/foodpartners");
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/foodpartners`);
                 if (response.data && response.data.partners) {
                     setRestaurants(response.data.partners);
                 }

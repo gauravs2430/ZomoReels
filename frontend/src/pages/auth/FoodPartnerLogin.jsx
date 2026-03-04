@@ -19,7 +19,7 @@ const FoodPartnerLogin = () => {
 
 
         try {
-            const response = await axios.post("http://localhost:3002/api/auth/foodpartner/login", {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/foodpartner/login`, {
                 email,
                 password
             }, {
@@ -39,7 +39,7 @@ const FoodPartnerLogin = () => {
 
     }
 
-    
+
     return (
         <div className="auth-container">
             <div className="auth-card">

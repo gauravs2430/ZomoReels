@@ -23,7 +23,7 @@ const UserProfile = () => {
 
         const fetchVideos = async () => {
             try {
-                const response = await axios.get("http://localhost:3002/api/food/getItem", {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/food/getItem`, {
                     withCredentials: true
                 });
                 if (response.data && response.data.foodItem) {
@@ -41,7 +41,7 @@ const UserProfile = () => {
 
     const handleLogout = async () => {
         try {
-            await axios.get("http://localhost:3002/api/auth/user/logout", {
+            await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/user/logout`, {
                 withCredentials: true
             });
             navigate('/user/login');

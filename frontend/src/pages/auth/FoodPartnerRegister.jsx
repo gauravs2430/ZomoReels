@@ -30,7 +30,7 @@ const FoodPartnerRegister = () => {
         console.log(fullname, email, password, contactName, phone, address);
 
         try {
-            const response = await axios.post("http://localhost:3002/api/auth/foodpartner/register", {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/foodpartner/register`, {
                 fullname,
                 email,
                 password,

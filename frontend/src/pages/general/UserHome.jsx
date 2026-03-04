@@ -69,7 +69,7 @@ const UserHome = () => {
     useEffect(() => {
         const fetchVideos = async () => {
             try {
-                const response = await axios.get("http://localhost:3002/api/food/getItem", {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/food/getItem`, {
                     withCredentials: true
                 });
                 if (response.data && response.data.foodItem) {
