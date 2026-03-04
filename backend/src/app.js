@@ -5,9 +5,13 @@ const authRoutes = require("./routes/auth.routes");
 const foodRoutes = require("./routes/food.routes");
 
 const app = express();
+const cors = require("cors");
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: [
+    "http://localhost:5173",
+    "https://reel-s-tyle-video-feed-integration.vercel.app"
+  ],
   credentials: true
 }));
 
