@@ -5,7 +5,7 @@ const authRoutes = require("./routes/auth.routes");
 const foodRoutes = require("./routes/food.routes");
 
 const app = express();
-const cors = require("cors");
+
 
 app.use(cors({
   origin: [
