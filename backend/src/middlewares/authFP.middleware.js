@@ -19,7 +19,7 @@ async function authFoodPartnerMiddleware(req, res, next) {
         req.foodpartner = foodpartner;
         next();
     }
-    
+
     catch (err) {
         return res.status(400).json({
             message: "Invalid token"
@@ -39,7 +39,7 @@ async function authUserMiddleware(req, res, next) {
 
     try {
         const data = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await userModel.findById(data._id);
+        const user = await userModel.findById(data.id);
 
         req.user = user;
         next();
