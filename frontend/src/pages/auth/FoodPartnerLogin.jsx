@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/auth.css';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -19,11 +19,9 @@ const FoodPartnerLogin = () => {
 
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/foodpartner/login`, {
+            const response = await axiosInstance.post("/api/auth/foodpartner/login", {
                 email,
                 password
-            }, {
-                withCredentials: true
             });
 
             console.log("Login Response:", response.data);

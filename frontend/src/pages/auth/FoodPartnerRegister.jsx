@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/auth.css';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -30,15 +30,13 @@ const FoodPartnerRegister = () => {
         console.log(fullname, email, password, contactName, phone, address);
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/foodpartner/register`, {
+            const response = await axiosInstance.post("/api/auth/foodpartner/register", {
                 fullname,
                 email,
                 password,
                 contactName,
                 phone,
                 address
-            }, {
-                withCredentials: true
             })
 
             console.log(response.data);

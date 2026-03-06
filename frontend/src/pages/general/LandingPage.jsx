@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/landing.css';
 
@@ -12,7 +12,7 @@ const LandingPage = () => {
     useEffect(() => {
         const fetchRestaurants = async () => {
             try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/foodpartners`);
+                const response = await axiosInstance.get("/api/auth/foodpartners");
                 if (response.data && response.data.partners) {
                     setRestaurants(response.data.partners);
                 }

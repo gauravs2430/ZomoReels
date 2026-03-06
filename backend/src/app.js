@@ -8,10 +8,7 @@ const app = express();
 
 
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://reel-s-tyle-video-feed-integration.vercel.app"
-  ],
+  origin: "http://localhost:5173",
   credentials: true
 }));
 
@@ -20,11 +17,11 @@ app.use(cookieParser());
 app.use(express.json());
 
 
-app.get('/' , (req,res)=>{
-    res.send("Hello World");
+app.get('/', (req, res) => {
+  res.send("Hello World");
 });
-app.use("/api/auth" , authRoutes);
-app.use("/api/food" , foodRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/food", foodRoutes);
 
 
 module.exports = app;

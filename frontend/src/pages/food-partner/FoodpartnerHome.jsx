@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import axios from "axios";
+import axiosInstance from '../../api/axiosInstance';
 import "../../styles/userHome.css"; // Reuse existing styles for video feed
 import "../../styles/foodPartnerHome.css"; // New dashboard styles
 import { useNavigate } from "react-router-dom";
@@ -90,9 +90,8 @@ const FoodPartnerHome = () => {
         setUploadStatus(null);
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/food/addItem`, formData, {
+            const response = await axiosInstance.post("/api/food/addItem", formData, {
                 headers: { "Content-Type": "multipart/form-data" },
-                withCredentials: true
             });
             console.log("Upload success:", response.data);
             setUploadStatus('success');
@@ -130,9 +129,8 @@ const FoodPartnerHome = () => {
         setImageUploadStatus(null);
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/foodpartner/image`, formData, {
+            const response = await axiosInstance.post("/api/auth/foodpartner/image", formData, {
                 headers: { "Content-Type": "multipart/form-data" },
-                withCredentials: true
             });
             console.log("Image upload success:", response.data);
             setImageUploadStatus('success');
@@ -148,9 +146,7 @@ const FoodPartnerHome = () => {
 
     const fetchMyReels = async () => {
         try {
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/food/getFoodpartnerItems`, {
-                withCredentials: true
-            });
+            const response = await axiosInstance.get("/api/food/getFoodpartnerItems");
             if (response.data && response.data.videos) {
                 setVideos(response.data.videos);
                 if (response.data.videos.length > 0) {

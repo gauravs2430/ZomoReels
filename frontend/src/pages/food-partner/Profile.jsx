@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from '../../api/axiosInstance';
 import { useNavigate } from "react-router-dom";
 import "../../styles/foodPartnerProfile.css";
 
@@ -14,10 +14,7 @@ const Profile = () => {
         const fetchData = async () => {
             try {
                 // Fetch partner's own reels
-                const videosRes = await axios.get(
-                    `${import.meta.env.VITE_API_URL}/api/food/getFoodpartnerItems`,
-                    { withCredentials: true }
-                );
+                const videosRes = await axiosInstance.get("/api/food/getFoodpartnerItems");
                 if (videosRes.data && videosRes.data.videos) {
                     setVideos(videosRes.data.videos);
                 }
@@ -44,10 +41,7 @@ const Profile = () => {
 
     const handleLogout = async () => {
         try {
-            await axios.get(
-                `${import.meta.env.VITE_API_URL}/api/auth/foodpartner/logout`,
-                { withCredentials: true }
-            );
+            await axiosInstance.get("/api/auth/foodpartner/logout");
             navigate("/foodpartner/login");
         } catch (err) {
             console.error("Logout failed:", err);

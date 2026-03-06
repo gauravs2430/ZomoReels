@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../../styles/userHome.css";
-import axios from "axios";
+import axiosInstance from '../../api/axiosInstance';
 
 const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
     const videoRef = useRef(null);
@@ -69,9 +69,7 @@ const UserHome = () => {
     useEffect(() => {
         const fetchVideos = async () => {
             try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/food/getItem`, {
-                    withCredentials: true
-                });
+                const response = await axiosInstance.get("/api/food/getItem");
                 if (response.data && response.data.foodItem) {
                     setVideos(response.data.foodItem);
                     if (response.data.foodItem.length > 0) {

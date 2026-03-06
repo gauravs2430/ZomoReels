@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/auth.css';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -16,12 +16,10 @@ const UserRegister = () => {
         e.preventDefault();
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/user/register`, {
+            const response = await axiosInstance.post("/api/auth/user/register", {
                 fullname: name,
                 email,
                 password
-            }, {
-                withCredentials: true
             })
 
             console.log(response.data);
