@@ -188,3 +188,54 @@
         transform: translate(-50%, -50%) scale(0.9);
     }
 }
+
+/* ======================
+   RESPONSIVE BREAKPOINTS
+====================== */
+@media (max-width: 768px) {
+    .store-name {
+        font-size: 1.6rem;
+    }
+
+    .video-description {
+        font-size: 0.95rem;
+    }
+
+    .sidebar-actions {
+        right: 12px;
+        bottom: 100px;
+        gap: 18px;
+    }
+
+    .action-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .store-info {
+        max-width: 70%;
+    }
+
+    .store-name {
+        font-size: 1.2rem;
+        letter-spacing: 0;
+    }
+
+    .video-description {
+        font-size: 0.85rem;
+    }
+
+    .visit-store-btn {
+        padding: 9px 16px;
+        font-size: 0.85rem;
+    }
+
+    .action-btn {
+        width: 42px;
+        height: 42px;
+        font-size: 1.1rem;
+    }
+}

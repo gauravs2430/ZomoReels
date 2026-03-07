@@ -139,3 +139,57 @@
     font-size: 1.2rem;
     text-shadow: 2px 2px 0px #000;
 }
+
+/* ======================
+   RESPONSIVE BREAKPOINTS
+====================== */
+@media (max-width: 768px) {
+    .profile-container {
+        padding: 24px 16px;
+    }
+
+    .profile-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .profile-name {
+        font-size: 1.8rem;
+    }
+
+    .profile-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .stat-value {
+        font-size: 2.4rem;
+    }
+
+    .reels-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-info-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .profile-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .reels-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .section-title {
+        font-size: 1.4rem;
+    }
+}

@@ -223,3 +223,105 @@
     font-size: 0.85rem;
     font-weight: 500;
 }
+
+/* ======================
+   RESPONSIVE BREAKPOINTS
+====================== */
+
+/* Tablet */
+@media (max-width: 768px) {
+    .landing-header {
+        padding: 14px 20px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .search-bar-container {
+        order: 3;
+        flex: 1 1 100%;
+        margin: 0;
+        max-width: 100%;
+    }
+
+    .auth-nav {
+        gap: 8px;
+    }
+
+    .nav-btn {
+        padding: 8px 14px;
+        font-size: 0.9rem;
+    }
+
+    .landing-main {
+        padding: 40px 20px;
+    }
+
+    .main-title {
+        font-size: 2.2rem;
+        margin-bottom: 30px;
+    }
+
+    .restaurant-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 24px;
+    }
+
+    .landing-footer {
+        padding: 40px 20px 20px;
+    }
+
+    .footer-columns {
+        gap: 24px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .landing-header {
+        padding: 12px 16px;
+    }
+
+    .brand-logo {
+        font-size: 1.6rem;
+    }
+
+    .search-bar-container {
+        display: none;
+    }
+
+    .auth-nav {
+        gap: 6px;
+    }
+
+    .nav-btn {
+        padding: 7px 10px;
+        font-size: 0.8rem;
+    }
+
+    .landing-main {
+        padding: 24px 14px;
+    }
+
+    .main-title {
+        font-size: 1.6rem;
+        margin-bottom: 20px;
+    }
+
+    .restaurant-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .restaurant-card {
+        height: 200px;
+    }
+
+    .card-restaurant-name {
+        font-size: 1.3rem;
+    }
+
+    .footer-columns {
+        flex-direction: column;
+        gap: 16px;
+    }
+}
