@@ -159,10 +159,17 @@ async function updateFoodpartnerImage(req, res) {
     }
 }
 
+function getUserMe(req, res) {
+    return res.status(200).json({
+        user: { id: req.user._id, fullname: req.user.fullname, email: req.user.email }
+    });
+}
+
 module.exports = {
     registerUser,
     loginUser,
     logoutUser,
+    getUserMe,
 
     registerFoodpartner,
     loginFoodpartner,

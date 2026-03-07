@@ -5,45 +5,7 @@ import "../../styles/foodPartnerHome.css"; // New dashboard styles
 import { useNavigate } from "react-router-dom";
 
 // Duplicated VideoCard for now as per plan
-const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
-    const videoRef = useRef(null);
-    const [isTruncated, setIsTruncated] = useState(true);
-
-    useEffect(() => {
-        if (isActive && videoRef.current) {
-            videoRef.current.currentTime = 0;
-            videoRef.current.play().catch(error => console.log("Autoplay prevented:", error));
-        } else if (videoRef.current) {
-            videoRef.current.pause();
-        }
-    }, [isActive]);
-
-    return (
-        <div className="video-card">
-            <video
-                ref={videoRef}
-                className="video-player"
-                src={video.video}
-                loop
-                muted={isMuted}
-                playsInline
-                onClick={toggleMute}
-            />
-
-            <div className="video-overlay">
-                <div className="store-info">
-                    <h3 className="store-name">{video.foodname}</h3>
-                    <p
-                        className={`video-description ${isTruncated ? 'truncated' : ''}`}
-                        onClick={() => setIsTruncated(!isTruncated)}
-                    >
-                        {video.description}
-                    </p>
-                </div>
-            </div>
-        </div>
-    );
-};
+ 
 
 const FoodPartnerHome = () => {
     const navigate = useNavigate();
@@ -58,13 +20,39 @@ const FoodPartnerHome = () => {
     const [tags, setTags] = useState("");
     const [videoFile, setVideoFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
-    const [uploadStatus, setUploadStatus] = useState(null); // 'success', 'error'
+    const [uploadStatus, setUploadStatus] = useState(null);
 
-
-
+    // Restaurant background image states
+    const [profileImageFile, setProfileImageFile] = useState(null);
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
+    const [imageUploadStatus, setImageUploadStatus] = useState(null);
     const handleFileChange = (e) => {
-        if (e.target.files[0]) {
-            setVideoFile(e.target.files[0]);
+        if (e.target.files[0]) { setVideoFile(e.target.files[0]); }
+    };
+
+    const handleProfileImageChange = (e) => {
+        if (e.target.files[0]) { setProfileImageFile(e.target.files[0]); }
+    };
+
+    const handleProfileImageUpload = async (e) => {
+        e.preventDefault();
+        if (!profileImageFile) { alert("Please select an image file first"); return; }
+        const formData = new FormData();
+        formData.append("image", profileImageFile);
+        setIsUploadingImage(true);
+        setImageUploadStatus(null);
+        try {
+            await axiosInstance.post("/api/auth/foodpartner/image", formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            setImageUploadStatus('success');
+            setProfileImageFile(null);
+            setTimeout(() => setImageUploadStatus(null), 3000);
+        } catch (error) {
+            console.error("Image upload failed:", error);
+            setImageUploadStatus('error');
+        } finally {
+            setIsUploadingImage(false);
         }
     };
 
@@ -179,12 +167,18 @@ const FoodPartnerHome = () => {
                     <h1>Partner Dashboard</h1>
                     <p>Manage your culinary content</p>
                 </div>
-                <button
-                    onClick={toggleReels}
-                    className="view-reels-btn"
-                >
-                    View My Reels 📱
-                </button>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <button
+                        onClick={() => navigate('/foodpartner/profile')}
+                        className="view-reels-btn"
+                        style={{ background: 'var(--color-surface)' }}
+                    >
+                        👤 My Profile
+                    </button>
+                    <button onClick={toggleReels} className="view-reels-btn">
+                        View My Reels 📱
+                    </button>
+                </div>
             </header>
 
             <main className="dashboard-main">
@@ -265,7 +259,6 @@ const FoodPartnerHome = () => {
                         </button>
                     </form>
                 </div>
-
             </main>
         </div>
     );

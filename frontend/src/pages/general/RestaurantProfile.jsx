@@ -10,10 +10,19 @@ const RestaurantProfile = () => {
     const [videos, setVideos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [activeVideo, setActiveVideo] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
-        const fetchRestaurant = async () => {
+        const init = async () => {
+            // Check login status
+            try {
+                await axiosInstance.get("/api/auth/user/me");
+                setIsLoggedIn(true);
+            } catch {
+                setIsLoggedIn(false);
+            }
+
+            // Always load restaurant info (public)
             try {
                 const res = await axiosInstance.get(`/api/food/restaurant/${id}`);
                 if (res.data) {
@@ -27,7 +36,7 @@ const RestaurantProfile = () => {
                 setLoading(false);
             }
         };
-        fetchRestaurant();
+        init();
     }, [id]);
 
     if (loading) return <div className="rp-loading">Loading Restaurant...</div>;
@@ -42,10 +51,10 @@ const RestaurantProfile = () => {
 
             {/* Back button */}
             <button className="rp-back-btn" onClick={() => navigate(-1)}>
-                ← Back to Feed
+                ← Back
             </button>
 
-            {/* HERO */}
+            {/* HERO — always visible */}
             <div className="rp-hero">
                 <img src={avatarUrl} alt={partner?.fullname} className="rp-avatar" />
                 <div className="rp-hero-info">
@@ -58,7 +67,7 @@ const RestaurantProfile = () => {
                 </div>
             </div>
 
-            {/* STATS */}
+            {/* STATS — always visible */}
             <div className="rp-stats-row">
                 <div className="rp-stat">
                     <p className="rp-stat-val">{videos.length}</p>
@@ -74,23 +83,38 @@ const RestaurantProfile = () => {
                 </div>
             </div>
 
-            {/* VIDEO GRID */}
+            {/* REELS SECTION — gated */}
             <div className="rp-section">
                 <h2 className="rp-section-title">
                     🎥 Reels
-                    <span className="rp-video-count">{videos.length} {videos.length === 1 ? "video" : "videos"}</span>
+                    <span className="rp-video-count">
+                        {isLoggedIn ? `${videos.length} ${videos.length === 1 ? "video" : "videos"}` : "Login to view"}
+                    </span>
                 </h2>
 
-                {videos.length === 0 ? (
+                {!isLoggedIn ? (
+                    /* NOT logged in → login gate */
+                    <div className="rp-auth-gate">
+                        <div className="rp-gate-icon">🔒</div>
+                        <h3 className="rp-gate-title">Login to view reels & order food</h3>
+                        <p className="rp-gate-sub">Join ZomoReels to watch food reels and place orders from your favourite restaurants.</p>
+                        <div className="rp-gate-btns">
+                            <button className="rp-gate-btn-primary" onClick={() => navigate('/user/login')}>
+                                Log In
+                            </button>
+                            <button className="rp-gate-btn-secondary" onClick={() => navigate('/user/register')}>
+                                Sign Up — it's free
+                            </button>
+                        </div>
+                    </div>
+                ) : videos.length === 0 ? (
                     <div className="rp-empty">This restaurant hasn't uploaded any reels yet.</div>
                 ) : (
+                    /* Logged in → show full video grid */
                     <div className="rp-video-grid">
                         {videos.map((video) => (
                             <div key={video._id} className="rp-video-card">
-                                <div
-                                    className="rp-video-thumb"
-                                    onClick={() => setActiveVideo(activeVideo === video._id ? null : video._id)}
-                                >
+                                <div className="rp-video-thumb">
                                     <video
                                         src={video.video}
                                         className="rp-video-preview"
@@ -112,7 +136,6 @@ const RestaurantProfile = () => {
                                             ))}
                                         </div>
                                     )}
-                                    {/* Order button — placeholder for future ordering flow */}
                                     <button className="rp-order-btn" onClick={() => alert('Ordering coming soon!')}>
                                         🛒 Order This Dish
                                     </button>

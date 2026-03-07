@@ -59,8 +59,12 @@ const LandingPage = () => {
                         <p className="empty-message">No restaurants found matching your search.</p>
                     ) : (
                         filteredRestaurants.map(rest => (
-                            <div key={rest._id} className="restaurant-card">
-                                {/* Display actual restaurant background image or fallback if not available */}
+                            <div
+                                key={rest._id}
+                                className="restaurant-card"
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => navigate(`/restaurant/${rest._id}`)}
+                            >
                                 <div className="card-bg" style={{ backgroundImage: `url(${rest.image || `https://source.unsplash.com/600x400/?restaurant,food&sig=${rest._id}`})` }}>
                                     <div className="card-overlay">
                                         <h3 className="card-restaurant-name">{rest.fullname}</h3>
