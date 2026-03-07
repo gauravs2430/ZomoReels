@@ -29,7 +29,7 @@ const FoodPartnerLogin = () => {
             setEmail("");
             setPassword("");
 
-            navigate('/foodpartner/Home');
+            navigate('/foodpartner/profile');
 
         } catch (error) {
             console.log("Error", error.response.data);

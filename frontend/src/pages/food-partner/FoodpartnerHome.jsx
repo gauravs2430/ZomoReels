@@ -60,10 +60,7 @@ const FoodPartnerHome = () => {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadStatus, setUploadStatus] = useState(null); // 'success', 'error'
 
-    // Profile Image States
-    const [profileImageFile, setProfileImageFile] = useState(null);
-    const [isUploadingImage, setIsUploadingImage] = useState(false);
-    const [imageUploadStatus, setImageUploadStatus] = useState(null);
+
 
     const handleFileChange = (e) => {
         if (e.target.files[0]) {
@@ -109,40 +106,7 @@ const FoodPartnerHome = () => {
         }
     };
 
-    const handleProfileImageChange = (e) => {
-        if (e.target.files[0]) {
-            setProfileImageFile(e.target.files[0]);
-        }
-    };
 
-    const handleProfileImageUpload = async (e) => {
-        e.preventDefault();
-        if (!profileImageFile) {
-            alert("Please select an image file first");
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append("image", profileImageFile);
-
-        setIsUploadingImage(true);
-        setImageUploadStatus(null);
-
-        try {
-            const response = await axiosInstance.post("/api/auth/foodpartner/image", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
-            console.log("Image upload success:", response.data);
-            setImageUploadStatus('success');
-            setProfileImageFile(null);
-            setTimeout(() => setImageUploadStatus(null), 3000);
-        } catch (error) {
-            console.error("Image upload failed:", error);
-            setImageUploadStatus('error');
-        } finally {
-            setIsUploadingImage(false);
-        }
-    };
 
     const fetchMyReels = async () => {
         try {
@@ -302,50 +266,6 @@ const FoodPartnerHome = () => {
                     </form>
                 </div>
 
-                <div className="upload-card" style={{ marginTop: '40px' }}>
-                    <h2 className="card-title">
-                        🖼️ Update Restaurant Background
-                    </h2>
-
-                    <form onSubmit={handleProfileImageUpload} className="upload-form">
-                        <div className="form-group">
-                            <label>Background Image</label>
-                            <div className="file-drop-zone">
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleProfileImageChange}
-                                    className="file-input-hidden"
-                                />
-                                <div className="file-label-text">
-                                    <span style={{ fontSize: '2rem' }}>🖼️</span>
-                                    <span>
-                                        {profileImageFile ? `✅ ${profileImageFile.name}` : 'Click or Drag image here'}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {imageUploadStatus === 'success' && (
-                            <div className="upload-status success">
-                                ✅ Background Updated Successfully!
-                            </div>
-                        )}
-                        {imageUploadStatus === 'error' && (
-                            <div className="upload-status error">
-                                ❌ Upload Failed. Please try again.
-                            </div>
-                        )}
-
-                        <button
-                            type="submit"
-                            disabled={isUploadingImage}
-                            className="submit-btn"
-                        >
-                            {isUploadingImage ? 'Uploading...' : 'Update Background'}
-                        </button>
-                    </form>
-                </div>
             </main>
         </div>
     );

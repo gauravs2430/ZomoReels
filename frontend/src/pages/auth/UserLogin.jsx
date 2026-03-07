@@ -23,8 +23,8 @@ const UserLogin = () => {
         try {
 
             const response = await axiosInstance.post("/api/auth/user/login", {
-                email,
-                password
+                email: email,
+                password: password
             }, {});
 
             console.log(response.data);

@@ -59,6 +59,7 @@ async function getFoodpartnerItems(req, res) {
         });
 
         return res.status(200).json({
+            foodpartner: foodpartner, 
             videos
         })
     }

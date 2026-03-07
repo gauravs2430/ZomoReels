@@ -48,7 +48,7 @@ const FoodPartnerRegister = () => {
             setPhone("");
             setAddress("");
 
-            navigate('/foodpartner/Home');
+            navigate('/foodpartner/profile');
 
         }
         catch (err) {

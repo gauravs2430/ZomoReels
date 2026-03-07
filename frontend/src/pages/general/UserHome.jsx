@@ -65,6 +65,7 @@ const UserHome = () => {
     const [videos, setVideos] = useState([]);
     const [activeVideoId, setActiveVideoId] = useState(null);
     const [isMuted, setIsMuted] = useState(true);
+    const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
         const fetchVideos = async () => {
@@ -78,6 +79,8 @@ const UserHome = () => {
                 }
             } catch (error) {
                 console.error("Error fetching videos:", error);
+            } finally {
+                setLoaded(true);
             }
         };
 
@@ -101,8 +104,10 @@ const UserHome = () => {
 
     return (
         <div className="video-feed-container" onScroll={handleScroll}>
-            {videos.length === 0 ? (
+            {!loaded ? (
                 <div className="loading-state">Loading delicious feed...</div>
+            ) : videos.length === 0 ? (
+                <div className="loading-state">🍽️ No reels yet! Check back soon.</div>
             ) : (
                 videos.map((video) => (
                     <VideoCard
