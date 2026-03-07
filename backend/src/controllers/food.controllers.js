@@ -59,7 +59,7 @@ async function getFoodpartnerItems(req, res) {
         });
 
         return res.status(200).json({
-            foodpartner: foodpartner, 
+            foodpartner: foodpartner,
             videos
         })
     }
@@ -72,9 +72,24 @@ async function getFoodpartnerItems(req, res) {
 
 }
 
+async function getRestaurantById(req, res) {
+    try {
+        const { id } = req.params;
+        const foodpartnerModel = require("../models/foodpartner.models");
+        const partner = await foodpartnerModel.findById(id).select('-password');
+        if (!partner) {
+            return res.status(404).json({ message: "Restaurant not found" });
+        }
+        const videos = await foodModel.find({ foodpartner: id });
+        return res.status(200).json({ foodpartner: partner, videos });
+    } catch (err) {
+        return res.status(400).json({ message: "Failed to load restaurant", error: err.message });
+    }
+}
+
 module.exports = {
     createFood,
     getFoodItem,
-    getFoodpartnerItems
-
+    getFoodpartnerItems,
+    getRestaurantById
 }

@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../../styles/userHome.css";
 import axiosInstance from '../../api/axiosInstance';
+import { useNavigate } from "react-router-dom";
 
 const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
     const videoRef = useRef(null);
+    const navigate = useNavigate();
     const [isTruncated, setIsTruncated] = useState(true);
 
     useEffect(() => {
@@ -38,8 +40,7 @@ const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
                     </p>
                     <button className="visit-store-btn" onClick={(e) => {
                         e.stopPropagation();
-                        console.log(`Navigating to store ${video.foodpartner}`);
-                        // navigate(`/store/${video.foodpartner}`);
+                        navigate(`/restaurant/${video.foodpartner}`);
                     }}>
                         Visit Store <span>→</span>
                     </button>

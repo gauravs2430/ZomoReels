@@ -9,6 +9,7 @@ import FoodPartnerHome from "../pages/food-partner/FoodpartnerHome";
 import Profile from "../pages/food-partner/Profile";
 import LandingPage from '../pages/general/LandingPage';
 import UserProfile from '../pages/general/UserProfile';
+import RestaurantProfile from '../pages/general/RestaurantProfile';
 import { Navigate } from "react-router-dom";
 
 
@@ -26,6 +27,7 @@ const AppRoutes = () => {
                     <Route path="/user/Home" element={<UserHome />} />
                     <Route path="/foodpartner/Home" element={<FoodPartnerHome />} />
                     <Route path="/foodpartner/profile" element={<Profile />} />
+                    <Route path="/restaurant/:id" element={<RestaurantProfile />} />
                 </Routes>
             </Router>
 
