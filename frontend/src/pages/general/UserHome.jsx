@@ -5,27 +5,22 @@ import { useNavigate } from "react-router-dom";
 
 // ─────────────────────────────────────────────────────────────
 //  VideoCard
-//  Props:
-//    video      - food document from DB (includes likeCount)
-//    isActive   - whether this card is currently in view
-//    toggleMute - mutes/unmutes all videos globally
-//    isMuted    - current mute state
+//  Renders a single full-screen reel with like, comment, save actions.
+//  Props: video (food doc), isActive, toggleMute, isMuted
 // ─────────────────────────────────────────────────────────────
 const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
     const videoRef = useRef(null);
     const navigate = useNavigate();
     const [isTruncated, setIsTruncated] = useState(true);
 
-    // ── Like State ──────────────────────────────────────────
+    // Like: tracks whether this user liked this reel + running count from DB
     const [liked, setLiked] = useState(false);
     const [likes, setLikes] = useState(video.likeCount || 0);
 
-    // ── Save State ──────────────────────────────────────────
-    // saved: whether the user has bookmarked this reel
-    // Calls POST /api/food/save { foodId } — toggles save/unsave in DB
+    // Save: tracks whether this user bookmarked this reel
     const [saved, setSaved] = useState(false);
 
-    // Auto-play / pause based on visibility
+    // Auto-play / pause when scrolled in/out of view
     useEffect(() => {
         if (isActive) {
             videoRef.current.currentTime = 0;
@@ -35,7 +30,7 @@ const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
         }
     }, [isActive]);
 
-    // ── Handle Like / Unlike ────────────────────────────────
+    // POST /api/food/like { foodId } — toggles like, updates count on food doc
     const handleLike = async (e) => {
         e.stopPropagation();
         const wasLiked = liked;
@@ -50,9 +45,7 @@ const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
         }
     };
 
-    // ── Handle Save / Unsave ────────────────────────────────
-    // Flow: optimistic toggle → POST /api/food/save { foodId }
-    // Backend creates or deletes a save document for this user+food pair
+    // POST /api/food/save { foodId } — creates or deletes a save document
     const handleSave = async (e) => {
         e.stopPropagation();
         const wasSaved = saved;
@@ -61,7 +54,7 @@ const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
             await axiosInstance.post("/api/food/save", { foodId: video._id });
         } catch (err) {
             console.error("Save failed:", err);
-            setSaved(wasSaved); // rollback on error
+            setSaved(wasSaved);
         }
     };
 
@@ -78,7 +71,7 @@ const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
             />
 
             <div className="video-overlay">
-                {/* Bottom-left: dish name, description, visit store */}
+                {/* Bottom-left: dish info + Visit Store */}
                 <div className="store-info">
                     <h3 className="store-name">{video.foodname}</h3>
                     <p
@@ -89,40 +82,23 @@ const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
                     </p>
                     <button className="visit-store-btn" onClick={(e) => {
                         e.stopPropagation();
-                        // Navigate to the restaurant's public profile page
-                        // RestaurantProfile.jsx shows reels only if user is logged in
                         navigate(`/restaurant/${video.foodpartner}`);
                     }}>
                         Visit Store <span>→</span>
                     </button>
                 </div>
 
-                {/* Right-side action buttons */}
+                {/* Right sidebar: Like, Comment, Save */}
                 <div className="sidebar-actions">
-
-                    {/* Like button */}
-                    <div
-                        className={`action-btn ${liked ? 'liked' : ''}`}
-                        onClick={handleLike}
-                        title={liked ? "Unlike" : "Like"}
-                    >
+                    {/* Like */}
+                    <div className={`action-btn ${liked ? 'liked' : ''}`} onClick={handleLike} title={liked ? "Unlike" : "Like"}>
                         {liked ? '❤️' : '🤍'}
                         <span className="action-label">{likes}</span>
                     </div>
-
-                    {/* 💬 Comment — placeholder */}
-                    <div className="action-btn" title="Comment (coming soon)">
-                        💬
-                    </div>
-
-                    {/* � Save button
-                        - Calls POST /api/food/save with { foodId }
-                        - Toggles saved state optimistically */}
-                    <div
-                        className={`action-btn ${saved ? 'saved' : ''}`}
-                        onClick={handleSave}
-                        title={saved ? "Unsave" : "Save"}
-                    >
+                    {/* Comment — placeholder */}
+                    <div className="action-btn" title="Comment (coming soon)">💬</div>
+                    {/* Save — POST /api/food/save */}
+                    <div className={`action-btn ${saved ? 'saved' : ''}`} onClick={handleSave} title={saved ? "Unsave" : "Save"}>
                         {saved ? '�' : '🏷️'}
                         <span className="action-label">{saved ? 'SAVED' : 'SAVE'}</span>
                     </div>
@@ -133,12 +109,77 @@ const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
 };
 
 // ─────────────────────────────────────────────────────────────
+//  SavedFeed
+//  Shown when user taps the "Saved" tab.
+//  Fetches GET /api/food/saved → renders reels in a vertical feed.
+// ─────────────────────────────────────────────────────────────
+const SavedFeed = () => {
+    const [savedVideos, setSavedVideos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [activeId, setActiveId] = useState(null);
+    const [isMuted, setIsMuted] = useState(true);
+
+    useEffect(() => {
+        const fetchSaved = async () => {
+            try {
+                // GET /api/food/saved — requires user auth cookie
+                // Returns { savedItems: [...food docs] }
+                const res = await axiosInstance.get("/api/food/saved");
+                if (res.data?.savedItems) {
+                    setSavedVideos(res.data.savedItems);
+                    if (res.data.savedItems.length > 0) {
+                        setActiveId(res.data.savedItems[0]._id);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch saved reels:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchSaved();
+    }, []);
+
+    const handleScroll = (e) => {
+        const index = Math.round(e.target.scrollTop / e.target.clientHeight);
+        if (savedVideos[index] && savedVideos[index]._id !== activeId) {
+            setActiveId(savedVideos[index]._id);
+        }
+    };
+
+    if (loading) return <div className="loading-state">Loading saved reels...</div>;
+    if (savedVideos.length === 0) return (
+        <div className="loading-state">
+            🏷️ No saved reels yet!<br />
+            <span style={{ fontSize: '1rem', fontWeight: 600 }}>Tap 🏷️ on any reel to save it.</span>
+        </div>
+    );
+
+    return (
+        <div className="video-feed-container saved-feed" onScroll={handleScroll}>
+            {savedVideos.map(video => (
+                <VideoCard
+                    key={video._id}
+                    video={video}
+                    isActive={video._id === activeId}
+                    toggleMute={() => setIsMuted(m => !m)}
+                    isMuted={isMuted}
+                />
+            ))}
+        </div>
+    );
+};
+
+// ─────────────────────────────────────────────────────────────
 //  UserHome
-//  - Fetches all food reels from GET /api/food/getItem
-//  - Manages scroll-snap active video tracking
-//  - Renders a vertical TikTok-style feed of VideoCards
+//  Main page with two tabs controlled by a bottom nav bar:
+//    🏠 Home  → vertial reel feed (all reels)
+//    🔖 Saved → saved reels feed (user's bookmarks)
 // ─────────────────────────────────────────────────────────────
 const UserHome = () => {
+    // 'home' | 'saved' — controls which tab/feed is visible
+    const [activeTab, setActiveTab] = useState('home');
+
     const [videos, setVideos] = useState([]);
     const [activeVideoId, setActiveVideoId] = useState(null);
     const [isMuted, setIsMuted] = useState(true);
@@ -147,10 +188,10 @@ const UserHome = () => {
     useEffect(() => {
         const fetchVideos = async () => {
             try {
-                // GET /api/food/getItem → returns { foodItem: [...] }
-                // Each food item now includes `likeCount` from food.models.js
+                // GET /api/food/getItem → { foodItem: [...] }
+                // Each food doc includes likeCount (added to food.models.js)
                 const response = await axiosInstance.get("/api/food/getItem");
-                if (response.data && response.data.foodItem) {
+                if (response.data?.foodItem) {
                     setVideos(response.data.foodItem);
                     if (response.data.foodItem.length > 0) {
                         setActiveVideoId(response.data.foodItem[0]._id);
@@ -162,41 +203,63 @@ const UserHome = () => {
                 setLoaded(true);
             }
         };
-
         fetchVideos();
     }, []);
 
-    // Track which video is currently in view using scroll position
     const handleScroll = (e) => {
-        const container = e.target;
-        const scrollPosition = container.scrollTop;
-        const videoHeight = container.clientHeight;
-        const index = Math.round(scrollPosition / videoHeight);
-
+        const index = Math.round(e.target.scrollTop / e.target.clientHeight);
         if (videos[index] && videos[index]._id !== activeVideoId) {
             setActiveVideoId(videos[index]._id);
         }
     };
 
-    const toggleMute = () => setIsMuted(!isMuted);
-
     return (
-        <div className="video-feed-container" onScroll={handleScroll}>
-            {!loaded ? (
-                <div className="loading-state">Loading delicious feed...</div>
-            ) : videos.length === 0 ? (
-                <div className="loading-state">🍽️ No reels yet! Check back soon.</div>
-            ) : (
-                videos.map((video) => (
-                    <VideoCard
-                        key={video._id}
-                        video={video}          // full food doc with likeCount
-                        isActive={video._id === activeVideoId}
-                        toggleMute={toggleMute}
-                        isMuted={isMuted}
-                    />
-                ))
-            )}
+        <div className="user-home-wrapper">
+            {/* ── Main Content ─────────────────────────────── */}
+            <div className="feed-area">
+                {activeTab === 'home' ? (
+                    /* HOME TAB: full reel feed */
+                    <div className="video-feed-container" onScroll={handleScroll}>
+                        {!loaded ? (
+                            <div className="loading-state">Loading delicious feed...</div>
+                        ) : videos.length === 0 ? (
+                            <div className="loading-state">🍽️ No reels yet! Check back soon.</div>
+                        ) : (
+                            videos.map(video => (
+                                <VideoCard
+                                    key={video._id}
+                                    video={video}
+                                    isActive={video._id === activeVideoId}
+                                    toggleMute={() => setIsMuted(m => !m)}
+                                    isMuted={isMuted}
+                                />
+                            ))
+                        )}
+                    </div>
+                ) : (
+                    /* SAVED TAB: user's bookmarked reels */
+                    <SavedFeed />
+                )}
+            </div>
+
+            {/* ── Bottom Navigation Bar ────────────────────── */}
+            {/* Two tabs: Home (all reels) and Saved (bookmarked reels) */}
+            <nav className="bottom-nav">
+                <button
+                    className={`bottom-nav-btn ${activeTab === 'home' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('home')}
+                >
+                    <span className="bottom-nav-icon">🏠</span>
+                    <span className="bottom-nav-label">Home</span>
+                </button>
+                <button
+                    className={`bottom-nav-btn ${activeTab === 'saved' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('saved')}
+                >
+                    <span className="bottom-nav-icon">🔖</span>
+                    <span className="bottom-nav-label">Saved</span>
+                </button>
+            </nav>
         </div>
     );
 };

@@ -87,35 +87,35 @@ async function getRestaurantById(req, res) {
     }
 }
 
-async function likeFoodItem(req,res) {
+async function likeFoodItem(req, res) {
 
-    const {foodId} = req.body ;
-    const user = req.user ;
+    const { foodId } = req.body;
+    const user = req.user;
 
     const isAlreadyLiked = await likeModel.findOne({
         user: user._id,
         food: foodId
     });
 
-    if(isAlreadyLiked){
+    if (isAlreadyLiked) {
         const unlike = await likeModel.deleteOne({
-            user: user._id ,
-            food: foodId 
+            user: user._id,
+            food: foodId
         })
-        await foodModel.findByIdAndUpdate(foodId , {
+        await foodModel.findByIdAndUpdate(foodId, {
             $inc: { likeCount: -1 }
         })
         return res.status(200).json({
-            message: "Food unliked successfully" 
+            message: "Food unliked successfully"
         })
     }
-    else{
+    else {
         const like = await likeModel.create({
             user: user._id,
-            food: foodId 
+            food: foodId
         })
 
-        await foodModel.findByIdAndUpdate(foodId , {
+        await foodModel.findByIdAndUpdate(foodId, {
             $inc: { likeCount: +1 }
         })
 
@@ -127,21 +127,21 @@ async function likeFoodItem(req,res) {
 
 }
 
-async function saveFoodItem(req,res) {
+async function saveFoodItem(req, res) {
 
-    const {foodId} = req.body ;
-    const user = req.user ;
+    const { foodId } = req.body;
+    const user = req.user;
 
     const isAlreadySaved = await saveModel.findOne({
         user: user._id,
-        food: foodId 
+        food: foodId
     })
 
-    if(isAlreadySaved){
+    if (isAlreadySaved) {
 
         const unSave = await saveModel.deleteOne({
             user: user._id,
-            food: foodId 
+            food: foodId
         })
 
         return res.status(200).json({
@@ -149,10 +149,10 @@ async function saveFoodItem(req,res) {
         })
 
     }
-    else{
+    else {
         const save = await saveModel.create({
             user: user._id,
-            food: foodId 
+            food: foodId
         })
 
         return res.status(201).json({
@@ -161,6 +161,24 @@ async function saveFoodItem(req,res) {
     }
 }
 
+// GET /api/food/saved
+// Returns all food reels bookmarked by the logged-in user
+// Requires: authUserMiddleware (user JWT cookie)
+async function getSavedItems(req, res) {
+    try {
+        const user = req.user;
+        // Find all save records for this user, then populate the food details
+        const saves = await saveModel
+            .find({ user: user._id })
+            .populate('food') // joins with foodModel to get full food doc
+            .sort({ createdAt: -1 }); // newest saves first
+
+        const savedFoods = saves.map(s => s.food).filter(Boolean);
+        return res.status(200).json({ savedItems: savedFoods });
+    } catch (err) {
+        return res.status(400).json({ message: "Failed to fetch saved items", error: err.message });
+    }
+}
 
 module.exports = {
     createFood,
@@ -168,5 +186,6 @@ module.exports = {
     getFoodpartnerItems,
     getRestaurantById,
     likeFoodItem,
-    saveFoodItem
+    saveFoodItem,
+    getSavedItems
 }

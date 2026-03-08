@@ -26,7 +26,10 @@ router.get("/restaurant/:id", foodControllers.getRestaurantById);
 router.post("/like", authMiddleware.authUserMiddleware, foodControllers.likeFoodItem);
 
 //save food 
-router.post("/save" , authMiddleware.authUserMiddleware , foodControllers.saveFoodItem);
+router.post("/save", authMiddleware.authUserMiddleware, foodControllers.saveFoodItem);
+
+// GET saved reels for the logged-in user
+router.get("/saved", authMiddleware.authUserMiddleware, foodControllers.getSavedItems);
 
 
 module.exports = router;
