@@ -1,8 +1,7 @@
 const foodModel = require("../models/food.models");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const storageServices = require("../services/storage.services");
 const { v4: uuid } = require("uuid");
+const likeModel = require("../models/likes.models");
 
 
 
@@ -87,9 +86,52 @@ async function getRestaurantById(req, res) {
     }
 }
 
+async function likeFoodItem(req,res) {
+
+    const {foodId} = req.body ;
+    const user = req.user ;
+
+    const isAlreadyLiked = await likeModel.findOne({
+        user: user._id,
+        food: foodId
+    });
+
+    if(isAlreadyLiked){
+        const unlike = await likeModel.deleteOne({
+            user: user._id ,
+            food: foodId 
+        })
+        await foodModel.findByIdAndUpdate(foodId , {
+            $inc: { likeCount: -1 }
+        })
+        return res.status(200).json({
+            message: "Food unliked successfully" 
+        })
+    }
+    else{
+        const like = await likeModel.create({
+            user: user._id,
+            food: foodId 
+        })
+
+        await foodModel.findByIdAndUpdate(foodId , {
+            $inc: { likeCount: +1 }
+        })
+
+        return res.status(200).json({
+            message: "Food liked successfully"
+        });
+
+    }
+
+}
+
+
+
 module.exports = {
     createFood,
     getFoodItem,
     getFoodpartnerItems,
-    getRestaurantById
+    getRestaurantById,
+    likeFoodItem
 }

@@ -1,4 +1,4 @@
-const mmongoose = require("mongoose")
+const mongoose = require("mongoose")
 
 const likeSchema = new mongoose.Schema({
 
@@ -17,6 +17,6 @@ const likeSchema = new mongoose.Schema({
     timestamps: true
 });
 
-const Like = mongoose.model("like" , likeSchema);
+const Like = mongoose.model("like", likeSchema);
 
 module.exports = Like;

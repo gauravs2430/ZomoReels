@@ -22,5 +22,8 @@ router.get("/getFoodpartnerItems", authMiddleware.authFoodPartnerMiddleware, foo
 // PUBLIC: Get a restaurant's profile + reels by ID (no auth needed)
 router.get("/restaurant/:id", foodControllers.getRestaurantById);
 
+//Like food item
+// router.post("/like", authMiddleware.authUserMiddleware, foodControllers.likeFoodItem);
+
 
 module.exports = router;
