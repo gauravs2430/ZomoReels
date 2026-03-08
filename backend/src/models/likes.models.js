@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const likeSchema = new mongoose.Schema({
 
@@ -7,9 +7,11 @@ const likeSchema = new mongoose.Schema({
         ref: "user",
         required: true
     },
-    video: {
+    // Field renamed from 'video' → 'food' to match the likeFoodItem controller
+    // which uses { user, food: foodId } in all findOne/create/deleteOne calls
+    food: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'food',
+        ref: "foodModel",
         required: true
     }
 

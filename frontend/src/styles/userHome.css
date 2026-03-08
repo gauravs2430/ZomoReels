@@ -147,6 +147,20 @@
     color: white;
 }
 
+/* Active liked state — shown when user has liked the reel */
+.action-btn.liked {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+/* Active saved state — shown when user has bookmarked this reel */
+.action-btn.saved {
+    background: #22c55e;
+    color: white;
+    border-color: #16a34a;
+}
+
 .action-label {
     font-size: 0.85rem;
     margin-top: 8px;

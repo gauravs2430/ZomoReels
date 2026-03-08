@@ -3,19 +3,67 @@ import "../../styles/userHome.css";
 import axiosInstance from '../../api/axiosInstance';
 import { useNavigate } from "react-router-dom";
 
+// ─────────────────────────────────────────────────────────────
+//  VideoCard
+//  Props:
+//    video      - food document from DB (includes likeCount)
+//    isActive   - whether this card is currently in view
+//    toggleMute - mutes/unmutes all videos globally
+//    isMuted    - current mute state
+// ─────────────────────────────────────────────────────────────
 const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
     const videoRef = useRef(null);
     const navigate = useNavigate();
     const [isTruncated, setIsTruncated] = useState(true);
 
+    // ── Like State ──────────────────────────────────────────
+    const [liked, setLiked] = useState(false);
+    const [likes, setLikes] = useState(video.likeCount || 0);
+
+    // ── Save State ──────────────────────────────────────────
+    // saved: whether the user has bookmarked this reel
+    // Calls POST /api/food/save { foodId } — toggles save/unsave in DB
+    const [saved, setSaved] = useState(false);
+
+    // Auto-play / pause based on visibility
     useEffect(() => {
         if (isActive) {
             videoRef.current.currentTime = 0;
-            videoRef.current.play().catch(error => console.log("Autoplay prevented:", error));
+            videoRef.current.play().catch(err => console.log("Autoplay prevented:", err));
         } else {
             videoRef.current.pause();
         }
     }, [isActive]);
+
+    // ── Handle Like / Unlike ────────────────────────────────
+    const handleLike = async (e) => {
+        e.stopPropagation();
+        const wasLiked = liked;
+        setLiked(!wasLiked);
+        setLikes(prev => wasLiked ? prev - 1 : prev + 1);
+        try {
+            await axiosInstance.post("/api/food/like", { foodId: video._id });
+        } catch (err) {
+            console.error("Like failed:", err);
+            setLiked(wasLiked);
+            setLikes(prev => wasLiked ? prev + 1 : prev - 1);
+        }
+    };
+
+    // ── Handle Save / Unsave ────────────────────────────────
+    // Flow: optimistic toggle → POST /api/food/save { foodId }
+    // Backend creates or deletes a save document for this user+food pair
+    const handleSave = async (e) => {
+        e.stopPropagation();
+        const wasSaved = saved;
+        setSaved(!wasSaved);
+        try {
+            await axiosInstance.post("/api/food/save", { foodId: video._id });
+        } catch (err) {
+            console.error("Save failed:", err);
+            setSaved(wasSaved); // rollback on error
+        }
+    };
 
     return (
         <div className="video-card">
@@ -30,6 +78,7 @@ const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
             />
 
             <div className="video-overlay">
+                {/* Bottom-left: dish name, description, visit store */}
                 <div className="store-info">
                     <h3 className="store-name">{video.foodname}</h3>
                     <p
@@ -40,21 +89,42 @@ const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
                     </p>
                     <button className="visit-store-btn" onClick={(e) => {
                         e.stopPropagation();
+                        // Navigate to the restaurant's public profile page
+                        // RestaurantProfile.jsx shows reels only if user is logged in
                         navigate(`/restaurant/${video.foodpartner}`);
                     }}>
                         Visit Store <span>→</span>
                     </button>
                 </div>
 
+                {/* Right-side action buttons */}
                 <div className="sidebar-actions">
-                    <div className="action-btn">
-                        ❤️ <span className="action-label">{Math.floor(Math.random() * 1000) + 100}</span>
+
+                    {/* Like button */}
+                    <div
+                        className={`action-btn ${liked ? 'liked' : ''}`}
+                        onClick={handleLike}
+                        title={liked ? "Unlike" : "Like"}
+                    >
+                        {liked ? '❤️' : '🤍'}
+                        <span className="action-label">{likes}</span>
                     </div>
-                    <div className="action-btn">
+
+                    {/* 💬 Comment — placeholder */}
+                    <div className="action-btn" title="Comment (coming soon)">
                         💬
                     </div>
-                    <div className="action-btn">
-                        🔗
+
+                    {/* � Save button
+                        - Calls POST /api/food/save with { foodId }
+                        - Toggles saved state optimistically */}
+                    <div
+                        className={`action-btn ${saved ? 'saved' : ''}`}
+                        onClick={handleSave}
+                        title={saved ? "Unsave" : "Save"}
+                    >
+                        {saved ? '�' : '🏷️'}
+                        <span className="action-label">{saved ? 'SAVED' : 'SAVE'}</span>
                     </div>
                 </div>
             </div>
@@ -62,6 +132,12 @@ const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
     );
 };
 
+// ─────────────────────────────────────────────────────────────
+//  UserHome
+//  - Fetches all food reels from GET /api/food/getItem
+//  - Manages scroll-snap active video tracking
+//  - Renders a vertical TikTok-style feed of VideoCards
+// ─────────────────────────────────────────────────────────────
 const UserHome = () => {
     const [videos, setVideos] = useState([]);
     const [activeVideoId, setActiveVideoId] = useState(null);
@@ -71,6 +147,8 @@ const UserHome = () => {
     useEffect(() => {
         const fetchVideos = async () => {
             try {
+                // GET /api/food/getItem → returns { foodItem: [...] }
+                // Each food item now includes `likeCount` from food.models.js
                 const response = await axiosInstance.get("/api/food/getItem");
                 if (response.data && response.data.foodItem) {
                     setVideos(response.data.foodItem);
@@ -88,6 +166,7 @@ const UserHome = () => {
         fetchVideos();
     }, []);
 
+    // Track which video is currently in view using scroll position
     const handleScroll = (e) => {
         const container = e.target;
         const scrollPosition = container.scrollTop;
@@ -99,9 +178,7 @@ const UserHome = () => {
         }
     };
 
-    const toggleMute = () => {
-        setIsMuted(!isMuted);
-    };
+    const toggleMute = () => setIsMuted(!isMuted);
 
     return (
         <div className="video-feed-container" onScroll={handleScroll}>
@@ -113,7 +190,7 @@ const UserHome = () => {
                 videos.map((video) => (
                     <VideoCard
                         key={video._id}
-                        video={video}
+                        video={video}          // full food doc with likeCount
                         isActive={video._id === activeVideoId}
                         toggleMute={toggleMute}
                         isMuted={isMuted}
