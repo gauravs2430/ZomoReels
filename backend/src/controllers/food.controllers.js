@@ -2,6 +2,7 @@ const foodModel = require("../models/food.models");
 const storageServices = require("../services/storage.services");
 const { v4: uuid } = require("uuid");
 const likeModel = require("../models/likes.models");
+const saveModel = require("../models/save.models");
 
 
 
@@ -126,6 +127,39 @@ async function likeFoodItem(req,res) {
 
 }
 
+async function saveFoodItem(req,res) {
+
+    const {foodId} = req.body ;
+    const user = req.user ;
+
+    const isAlreadySaved = await saveModel.findOne({
+        user: user._id,
+        food: foodId 
+    })
+
+    if(isAlreadySaved){
+
+        const unSave = await saveModel.deleteOne({
+            user: user._id,
+            food: foodId 
+        })
+
+        return res.status(200).json({
+            message: "Food unsaved successfully"
+        })
+
+    }
+    else{
+        const save = await saveModel.create({
+            user: user._id,
+            food: foodId 
+        })
+
+        return res.status(201).json({
+            message: "Food saved successfully"
+        })
+    }
+}
 
 
 module.exports = {
@@ -133,5 +167,6 @@ module.exports = {
     getFoodItem,
     getFoodpartnerItems,
     getRestaurantById,
-    likeFoodItem
+    likeFoodItem,
+    saveFoodItem
 }

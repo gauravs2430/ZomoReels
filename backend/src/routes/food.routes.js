@@ -23,7 +23,10 @@ router.get("/getFoodpartnerItems", authMiddleware.authFoodPartnerMiddleware, foo
 router.get("/restaurant/:id", foodControllers.getRestaurantById);
 
 //Like food item
-// router.post("/like", authMiddleware.authUserMiddleware, foodControllers.likeFoodItem);
+router.post("/like", authMiddleware.authUserMiddleware, foodControllers.likeFoodItem);
+
+//save food 
+router.post("/save" , authMiddleware.authUserMiddleware , foodControllers.saveFoodItem);
 
 
 module.exports = router;
