@@ -23,25 +23,38 @@ The platform has **two separate roles**:
 
 | Role | Who They Are | What They Can Do |
 |---|---|---|
-| 👤 **User** | A regular food-lover | Browse restaurants, watch food reels in a swipeable video feed |
-| 🍽️ **Food Partner** | A restaurant / food business | Register business, upload food videos, set restaurant background image, manage reels |
+| 👤 **User** | A regular food-lover | Browse restaurants, watch food reels, like & save reels, visit restaurant profiles |
+| 🍽️ **Food Partner** | A restaurant / food business | Register business, upload food videos, manage profile & avatar, set restaurant background image |
 
 ---
 
 ## ✨ Features
 
 ### For Users
-- 🏠 **Landing Page** — See all registered restaurants with their background images, name, contact, and address
+- 🏠 **Landing Page** — See all registered restaurants with their background images, name, contact, and address. Click any card to open the restaurant's public profile
 - 🔍 **Restaurant Search** — Filter restaurants by name in real time
-- 🎥 **Reel-Style Video Feed** — Scroll through food videos fullscreen (like Instagram Reels), with snapping between each video
+- 🎥 **Reel-Style Video Feed** — Scroll through food videos fullscreen (like Instagram Reels), with scroll-snap between each video
+- ❤️ **Like Reels** — Tap the heart to like/unlike a food reel; count is stored in the database and updates via optimistic UI
+- 🔖 **Save Reels** — Bookmark any food reel; saved reels are fetched per-user from the database
+- 🗂️ **Bottom Navigation** — Home tab (all reels) and Saved tab (your bookmarked reels) accessible from the feed
+- 🏪 **Public Restaurant Profile** — View a restaurant's info, stats, and all their reels from a user's perspective
+- 🔒 **Auth-Gated Content** — Restaurant reels and order buttons are only visible to logged-in users; guests see a login prompt
 - 🔐 **Secure Auth** — Register & login, session maintained via HttpOnly JWT cookie
 
 ### For Food Partners
 - 📋 **Restaurant Registration** — Full business onboarding (restaurant name, contact person, phone, address, email)
 - 🎬 **Food Reel Upload** — Upload food item videos with a name, description, and tags — stored on ImageKit CDN
-- 🖼️ **Background Image Upload** — Upload a restaurant cover image that shows on the public landing page
+- 🖼️ **Background Image Upload** — Upload a restaurant cover image that shows on the public landing page (from the dashboard)
+- 🖼️ **Avatar / Profile Picture** — Food partners can upload, change, or remove their profile picture from a popup menu on their profile page
 - 📊 **My Reels Dashboard** — View all uploaded food reels in one place
+- 👤 **Food Partner Profile Page** — A dedicated profile page shown after login, with reels grid, restaurant stats, and avatar management
 - 🔐 **Separate Authenticated Session** — Role-specific login, isolated from user sessions
+
+### Design & UX
+- 📱 **Fully Responsive** — Layout adjusts for desktop, tablet, and mobile (breakpoints: 768px, 480px)
+- 🎨 **CHOMP Aesthetic** — Sharp borders, stark box shadows, vibrant orange (`#FF5A36`), cream background, uppercase typography
+- 🌙 **Dark Mode** — Automatic via `prefers-color-scheme` media query
+- ✨ **Micro-animations** — Button press effects, card hover lifts, frosted-glass action buttons on reels, smooth transitions globally
 
 ---
 
@@ -53,16 +66,16 @@ The platform has **two separate roles**:
 | **React** | 19.x | Core UI framework, component-driven architecture |
 | **Vite** | 7.x | Blazing-fast dev server & production bundler |
 | **React Router DOM** | 7.x | Declarative client-side routing for all pages |
-| **Axios** | 1.x | HTTP client — all API calls go through Axios with `withCredentials: true` for cookie support |
-| **Vanilla CSS** | — | Custom styling per page, no CSS frameworks |
+| **Axios** | 1.x | HTTP client — all API calls go through a centralized `axiosInstance` with `withCredentials: true` for cookie support |
+| **Vanilla CSS** | — | Custom per-page CSS, no CSS frameworks; theme tokens in `theme.css` |
 
 ### Backend
 | Technology | Version | Role in Project |
 |---|---|---|
 | **Node.js** | — | JavaScript runtime |
 | **Express** | 5.x | Web framework — defines routes, middleware chain, and API handlers |
-| **MongoDB** | — | NoSQL database storing users, food partners, and food items |
-| **Mongoose** | 9.x | Schema validation and ODM; defines `User`, `FoodPartner`, and `Food` models |
+| **MongoDB** | — | NoSQL database storing users, food partners, food items, likes, and saves |
+| **Mongoose** | 9.x | Schema validation and ODM; defines `User`, `FoodPartner`, `Food`, `Like`, and `Save` models |
 | **JWT** | 9.x | Issues signed tokens on login — verified on every protected request |
 | **bcryptjs** | 3.x | Hashes passwords before saving (`salt rounds = 10`) |
 | **Multer** | 2.x | Handles `multipart/form-data` for video & image uploads; uses in-memory buffer storage |
@@ -85,38 +98,45 @@ The platform has **two separate roles**:
 ```
 Zomato-app/
 │
-├── backend/                        ← Express REST API Server
-│   ├── server.js                   ← Entry point: loads .env, connects DB, starts server on port 3002
+├── backend/                           ← Express REST API Server
+│   ├── server.js                      ← Entry point: loads .env, connects DB, starts server on port 3002
 │   └── src/
-│       ├── app.js                  ← Express app setup: registers middleware & mounts routes
-│       ├── controllers/            ← Business logic (the "brain" of each route)
-│       │   ├── auth.controllers.js ← Register/Login/Logout for Users & FoodPartners; image upload
-│       │   └── food.controllers.js ← Upload food reel, get all reels, get partner's own reels
+│       ├── app.js                     ← Express app setup: registers middleware & mounts routes
+│       ├── controllers/               ← Business logic (the "brain" of each route)
+│       │   ├── auth.controllers.js    ← Register/Login/Logout for Users & FoodPartners; image upload; getUserMe
+│       │   └── food.controllers.js    ← Upload reel, get reels, get partner reels, like/unlike, save/unsave,
+│       │                                 get saved items, public restaurant profile by ID
 │       ├── middlewares/
-│       │   └── authFP.middleware.js ← JWT auth guards for FoodPartner & User protected routes
-│       ├── models/                 ← Mongoose schemas (define DB structure)
-│       │   ├── user.models.js      ← User: fullname, email, hashed password
-│       │   ├── foodpartner.models.js ← FoodPartner: fullname, contact, phone, address, email, password, image URL
-│       │   └── food.models.js      ← Food item: foodname, video URL, description, tags, ref → FoodPartner
-│       ├── routes/                 ← Route definitions (URL → controller mapping)
-│       │   ├── auth.routes.js      ← /api/auth/* (login, register, logout, image upload)
-│       │   └── food.routes.js      ← /api/food/* (upload reel, fetch reels)
+│       │   └── authFP.middleware.js   ← JWT auth guards: authFoodPartnerMiddleware & authUserMiddleware
+│       ├── models/                    ← Mongoose schemas (define DB structure)
+│       │   ├── user.models.js         ← User: fullname, email, hashed password
+│       │   ├── foodpartner.models.js  ← FoodPartner: fullname, contact, phone, address, email, password, image URL
+│       │   ├── food.models.js         ← Food item: foodname, video URL, description, tags, likeCount, ref → FoodPartner
+│       │   ├── likes.models.js        ← Like: user (ref) + food (ref) — toggle like/unlike per user per reel
+│       │   └── save.models.js         ← Save: user (ref) + food (ref) — bookmarks per user
+│       ├── routes/                    ← Route definitions (URL → controller mapping)
+│       │   ├── auth.routes.js         ← /api/auth/* (login, register, logout, image upload, user check)
+│       │   └── food.routes.js         ← /api/food/* (upload, fetch, like, save, saved, public restaurant)
 │       ├── services/
-│       │   └── storage.services.js ← ImageKit integration: fileUpload() for videos, imageUpload() for images
+│       │   └── storage.services.js    ← ImageKit integration: fileUpload() for videos, imageUpload() for images
 │       └── db/
-│           └── db.js               ← Mongoose connection to MongoDB
+│           └── db.js                  ← Mongoose connection to MongoDB
 │
-└── frontend/                       ← React 19 + Vite SPA
+└── frontend/                          ← React 19 + Vite SPA
     └── src/
-        ├── main.jsx                ← ReactDOM render root
-        ├── App.jsx                 ← Root component — renders <AppRoutes />
+        ├── main.jsx                   ← ReactDOM render root
+        ├── App.jsx                    ← Root component — renders <AppRoutes />
+        ├── api/
+        │   └── axiosInstance.js       ← Centralized Axios instance (baseURL + withCredentials)
         ├── routes/
-        │   └── AppRoutes.jsx       ← All client-side routes defined here using React Router
+        │   └── AppRoutes.jsx          ← All client-side routes defined here using React Router
         ├── pages/
-        │   ├── auth/               ← UserLogin, UserRegister, FoodPartnerLogin, FoodPartnerRegister
-        │   ├── general/            ← LandingPage (restaurants), UserHome (reel feed), UserProfile
-        │   └── food-partner/       ← FoodPartnerHome (dashboard: upload reels + background image)
-        └── styles/                 ← Per-page CSS files
+        │   ├── auth/                  ← UserLogin, UserRegister, FoodPartnerLogin, FoodPartnerRegister
+        │   ├── general/               ← LandingPage, UserHome (reel feed + bottom nav), UserProfile,
+        │   │                             RestaurantProfile (public, auth-gated reels)
+        │   └── food-partner/          ← Profile (avatar management + reels grid),
+        │                                FoodPartnerHome (dashboard: upload reels + background image)
+        └── styles/                    ← Per-page CSS files + theme.css (global tokens & resets)
 ```
 
 ---
@@ -213,25 +233,58 @@ sequenceDiagram
 
 ---
 
+### Like / Save Flow (User ↔ Food Reel)
+
+```mermaid
+sequenceDiagram
+    participant U as UserHome (React)
+    participant BE as Express Backend
+    participant LM as likes.models / save.models
+    participant FM as food.models
+
+    U->>BE: POST /api/food/like { foodId } (user cookie)
+    BE->>LM: likeModel.findOne({ user, food: foodId })
+    alt Already liked
+        BE->>LM: likeModel.deleteOne(...)
+        BE->>FM: foodModel.findByIdAndUpdate(foodId, { $inc: { likeCount: -1 } })
+        BE-->>U: 200 "Food unliked successfully"
+    else Not yet liked
+        BE->>LM: likeModel.create({ user, food: foodId })
+        BE->>FM: foodModel.findByIdAndUpdate(foodId, { $inc: { likeCount: +1 } })
+        BE-->>U: 200 "Food liked successfully"
+    end
+
+    Note over U,BE: Same toggle pattern for POST /api/food/save
+```
+
+---
+
 ### Frontend Routing Map
 
 ```mermaid
 graph TD
-    Root["/ — LandingPage\n🏠 Browse all restaurants"] 
-    UHome["/user/Home — UserHome\n🎥 Reel video feed"]
+    Root["/ — LandingPage\n🏠 Browse all restaurants"]
+    UHome["/user/Home — UserHome\n🎥 Reel feed + Like/Save + Bottom Nav"]
     ULogin["/user/login — UserLogin"]
     UReg["/user/register — UserRegister"]
     UProfile["/user/profile — UserProfile"]
+    RestProfile["/restaurant/:id — RestaurantProfile\n🏪 Public profile — reels gated by login"]
     FPLogin["/foodpartner/login — FoodPartnerLogin"]
     FPReg["/foodpartner/register — FoodPartnerRegister"]
+    FPProfile["/foodpartner/profile — Profile\n👤 Avatar management + reels grid"]
     FPHome["/foodpartner/Home — FoodPartnerHome\n📊 Upload reels + background image"]
 
+    Root -->|click restaurant card| RestProfile
     Root --> ULogin
     Root --> FPLogin
     ULogin --> UHome
     UReg --> UHome
-    FPLogin --> FPHome
-    FPReg --> FPHome
+    UHome -->|Visit Store button| RestProfile
+    RestProfile -->|not logged in| ULogin
+    FPLogin --> FPProfile
+    FPReg --> FPProfile
+    FPProfile -->|dashboard button| FPHome
+    FPHome -->|My Profile button| FPProfile
 ```
 
 All routes are defined in `AppRoutes.jsx` and rendered through `App.jsx → AppRoutes`.
@@ -247,6 +300,7 @@ All routes are defined in `AppRoutes.jsx` and rendered through `App.jsx → AppR
 | `POST` | `/user/register` | `{ fullname, email, password }` | ❌ | Creates user, hashes password, sets JWT cookie |
 | `POST` | `/user/login` | `{ email, password }` | ❌ | Verifies credentials, sets JWT cookie |
 | `GET` | `/user/logout` | — | ❌ | Clears JWT cookie |
+| `GET` | `/user/me` | — | ✅ User Cookie | Returns logged-in user info (used for auth checks on public pages) |
 | `POST` | `/foodpartner/register` | `{ fullname, contactName, phone, address, email, password }` | ❌ | Creates restaurant partner, sets JWT cookie |
 | `POST` | `/foodpartner/login` | `{ email, password }` | ❌ | Verifies partner, sets JWT cookie |
 | `GET` | `/foodpartner/logout` | — | ❌ | Clears JWT cookie |
@@ -260,6 +314,10 @@ All routes are defined in `AppRoutes.jsx` and rendered through `App.jsx → AppR
 | `POST` | `/addItem` | `FormData: video, foodname, description, tags` | ✅ FP Cookie | Uploads video to ImageKit, saves food item to DB |
 | `GET` | `/getItem` | — | ✅ User Cookie | Returns all food reels (for user reel feed) |
 | `GET` | `/getFoodpartnerItems` | — | ✅ FP Cookie | Returns only the logged-in partner's uploaded reels |
+| `GET` | `/restaurant/:id` | `:id = foodpartner ObjectId` | ❌ Public | Returns the food partner's details + all their videos (used by RestaurantProfile page) |
+| `POST` | `/like` | `{ foodId }` | ✅ User Cookie | Toggles like/unlike on a food reel; increments/decrements `likeCount` on the food document |
+| `POST` | `/save` | `{ foodId }` | ✅ User Cookie | Toggles save/unsave on a food reel (bookmark) |
+| `GET` | `/saved` | — | ✅ User Cookie | Returns all food reels bookmarked by the logged-in user (populated from save documents) |
 
 ---
 
@@ -283,7 +341,7 @@ All routes are defined in `AppRoutes.jsx` and rendered through `App.jsx → AppR
   address     : String  (required),
   email       : String  (required, unique),
   password    : String  (required — bcrypt hashed),
-  image       : String  (default: "" — ImageKit CDN URL for background image)
+  image       : String  (default: "" — ImageKit CDN URL for profile/background image)
 }
 ```
 
@@ -294,11 +352,34 @@ All routes are defined in `AppRoutes.jsx` and rendered through `App.jsx → AppR
   video       : String   (required — ImageKit CDN URL for the reel video),
   description : String,
   tags        : [String] (default: [] — comma-separated, parsed on upload),
-  foodpartner : ObjectId (ref → foodpartners — links reel to its restaurant)
+  likeCount   : Number   (default: 0 — incremented/decremented by the like toggle API),
+  foodpartner : ObjectId (ref → "foodpartner" — links reel to its restaurant)
 }
 ```
 
 > The `foodpartner` field on each food item is a **Mongoose reference** (`ref: "foodpartner"`), enabling population queries to join reel data with restaurant data in a single query.
+
+### `likes` Collection
+```js
+{
+  user      : ObjectId  (ref → "user", required),
+  food      : ObjectId  (ref → "foodModel", required),
+  createdAt : Date      (auto — from timestamps: true)
+}
+```
+
+> Each document represents one user liking one food reel. The API checks for an existing document to decide whether to like or unlike (toggle behavior). `likeCount` on the food document is kept in sync.
+
+### `saves` Collection
+```js
+{
+  user      : ObjectId  (ref → "user", required),
+  food      : ObjectId  (ref → "foodModel", required),
+  createdAt : Date      (auto — from timestamps: true)
+}
+```
+
+> Same toggle pattern as likes. `GET /api/food/saved` populates the `food` field to return full food documents sorted by newest bookmark first.
 
 ---
 
@@ -321,6 +402,14 @@ Most tutorials store JWT tokens in `localStorage`. This project uses **HttpOnly 
 ### Dual-Role Auth
 
 Both Users and Food Partners use the same `token` cookie name but go through **separate middleware functions** (`authUserMiddleware` and `authFoodPartnerMiddleware`). Each middleware looks up the decoded ID in its respective MongoDB collection, so a user token cannot impersonate a food partner and vice versa.
+
+### Centralized Axios Instance
+
+All frontend API calls go through `src/api/axiosInstance.js` — a single Axios instance pre-configured with:
+- `baseURL` pointing to the backend
+- `withCredentials: true` (so cookies are sent automatically on every request)
+
+This means no individual component needs to manually configure the base URL or credentials — one change point for the entire app.
 
 ---
 
@@ -367,24 +456,32 @@ npm run dev
 # App running on http://localhost:5173
 ```
 
-> ⚠️ The frontend is hardcoded to call `http://localhost:3002` — make sure the backend is running before using the frontend.
+> ⚠️ The frontend calls `http://localhost:3002` via the centralized Axios instance — make sure the backend is running before using the frontend.
 
 ---
 
 ## 🗺️ Roadmap
 
 - [x] Dual-role authentication — User & Food Partner with HttpOnly JWT cookies
-- [x] Reel-style fullscreen vertical video feed for users
+- [x] Reel-style fullscreen vertical video feed for users (scroll-snap, autoplay)
 - [x] Food Partner dashboard with video (reel) upload to ImageKit
 - [x] Restaurant background image upload & live display on landing page
+- [x] Food partner avatar upload / change / remove (popup menu on profile page)
 - [x] Restaurant search/filter on landing page
 - [x] Tags support on food items
-- [ ] Comments & likes on food reels
-- [ ] User favorites / saved restaurants
+- [x] Like / unlike food reels (real DB count, optimistic UI)
+- [x] Save / unsave food reels (bookmarks, per-user)
+- [x] Saved Reels tab in user feed (bottom navigation: Home / Saved)
+- [x] Public Restaurant Profile page — auth-gated reels & order button
+- [x] Landing page restaurant cards → Restaurant Profile page
+- [x] Food Partner Profile page — avatar, stats, uploaded reels grid
+- [x] Centralized Axios instance (no hardcoded URLs in components)
+- [x] Fully responsive UI (desktop, tablet, mobile)
+- [x] Dark mode via `prefers-color-scheme`
+- [ ] Comments on food reels
 - [ ] Location-based restaurant filtering (geolocation)
 - [ ] Follow a restaurant — get notified on new reels
 - [ ] Admin panel for platform management
-- [ ] Full mobile-responsive UI
 - [ ] Payment & ordering system integration
 - [ ] Refresh token + token expiry (currently tokens don't expire)
 
@@ -400,9 +497,8 @@ npm run dev
 
 > **🚧 This project is actively under development.**
 >
-> The core architecture is in place and major features are functional. The codebase is being actively expanded with new features, UI polish, and security improvements. Not yet production-ready — but the foundations (auth, routing, media pipeline, dual-role system) are solid and built with industry-standard patterns.
+> The core architecture is in place and major features are functional. The codebase is being actively expanded with new features, UI polish, and security improvements. Not yet production-ready — but the foundations (auth, routing, media pipeline, dual-role system, like/save system, public profiles) are solid and built with industry-standard patterns.
 >
 > Feel free to explore the code, raise issues, or suggest improvements!
 
 ---
-
