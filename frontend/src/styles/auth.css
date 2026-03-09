@@ -86,28 +86,30 @@
 .form-input:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 3px 3px 0px var(--color-primary);
+    transform: translateX(-1px);
 }
 
 .auth-button {
     background-color: var(--color-primary);
     color: #FFF;
     padding: 14px;
-    border: 2px solid var(--color-primary);
+    border: 3px solid var(--color-text-primary);
     border-radius: var(--border-radius-md);
     font-size: 1.1rem;
-    font-weight: 800;
+    font-weight: 900;
     text-transform: uppercase;
+    letter-spacing: 1px;
     cursor: pointer;
-    transition: all 0.2s ease;
     margin-top: var(--spacing-sm);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 4px 4px 0px var(--color-text-primary);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .auth-button:hover {
     background-color: var(--color-primary-hover);
     transform: translate(-2px, -2px);
-    box-shadow: 4px 4px 0px var(--color-text-primary);
+    box-shadow: 6px 6px 0px var(--color-text-primary);
 }
 
 @media (prefers-color-scheme: dark) {

@@ -70,8 +70,8 @@ const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
                 onClick={toggleMute}
             />
 
+            {/* Bottom-left gradient overlay: dish name, description, Visit Store */}
             <div className="video-overlay">
-                {/* Bottom-left: dish info + Visit Store */}
                 <div className="store-info">
                     <h3 className="store-name">{video.foodname}</h3>
                     <p
@@ -84,27 +84,30 @@ const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
                         e.stopPropagation();
                         navigate(`/restaurant/${video.foodpartner}`);
                     }}>
-                        Visit Store <span>→</span>
+                        Visit Store →
                     </button>
                 </div>
+            </div>
 
-                {/* Right sidebar: Like, Comment, Save */}
-                <div className="sidebar-actions">
-                    {/* Like */}
-                    <div className={`action-btn ${liked ? 'liked' : ''}`} onClick={handleLike} title={liked ? "Unlike" : "Like"}>
-                        {liked ? '❤️' : '🤍'}
-                        <span className="action-label">{likes}</span>
-                    </div>
-                    {/* Comment — placeholder */}
-                    <div className="action-btn" title="Comment (coming soon)">💬</div>
-                    {/* Save — POST /api/food/save */}
-                    <div className={`action-btn ${saved ? 'saved' : ''}`} onClick={handleSave} title={saved ? "Unsave" : "Save"}>
-                        {saved ? '�' : '🏷️'}
-                        <span className="action-label">{saved ? 'SAVED' : 'SAVE'}</span>
-                    </div>
+            {/* Right sidebar — outside overlay, positioned absolute to video-card */}
+            <div className="sidebar-actions">
+                {/* Like */}
+                <div className={`action-btn ${liked ? 'liked' : ''}`} onClick={handleLike}>
+                    <span className="action-icon">{liked ? '❤️' : '🤍'}</span>
+                    <span className="action-label">{likes}</span>
+                </div>
+                {/* Comment placeholder */}
+                <div className="action-btn">
+                    <span className="action-icon">💬</span>
+                </div>
+                {/* Save */}
+                <div className={`action-btn ${saved ? 'saved' : ''}`} onClick={handleSave}>
+                    <span className="action-icon">{saved ? '🔖' : '🏷️'}</span>
+                    <span className="action-label">{saved ? 'Saved' : 'Save'}</span>
                 </div>
             </div>
         </div>
+
     );
 };
 

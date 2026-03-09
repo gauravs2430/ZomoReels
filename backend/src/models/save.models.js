@@ -6,14 +6,15 @@ const saveSchema = new mongoose.Schema({
         ref: "user",
         required: true
     },
-    food:{
+    food: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "food",
-        required: true  
+        // Must match the model name in food.models.js: mongoose.model("foodModel", ...)
+        ref: "foodModel",
+        required: true
     }
 }, {
     timestamps: true
 });
 
 const saveModel = mongoose.model("save", saveSchema);
-module.exports = saveModel ; 
+module.exports = saveModel; 
