@@ -20,7 +20,10 @@ async function registerUser(req, res) {
         const user = await userModel.create({ fullname, email, password: hashedPasswordUS });
 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.cookie("token", token, { httpOnly: true });
+        res.cookie("token", token, {
+            httpOnly: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days in milliseconds — matches JWT expiresIn: '7d'
+        });
 
         res.status(201).json({
             message: "User Registered sucessfully",
@@ -47,7 +50,10 @@ async function loginUser(req, res) {
         }
 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.cookie("token", token, { httpOnly: true });
+        res.cookie("token", token, {
+            httpOnly: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days in milliseconds — matches JWT expiresIn: '7d'
+        });
 
         res.status(200).json({
             message: "User Logged In sucessfully",
@@ -84,7 +90,10 @@ async function registerFoodpartner(req, res) {
         });
 
         const token = jwt.sign({ id: foodpartner._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.cookie("token", token, { httpOnly: true });
+        res.cookie("token", token, {
+            httpOnly: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days in milliseconds — matches JWT expiresIn: '7d'
+        });
 
         res.status(201).json({
             message: "Foodpartner Registered sucessfully",
@@ -111,7 +120,10 @@ async function loginFoodpartner(req, res) {
         }
 
         const token = jwt.sign({ id: foodpartner._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.cookie("token", token, { httpOnly: true });
+        res.cookie("token", token, {
+            httpOnly: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days in milliseconds — matches JWT expiresIn: '7d'
+        });
 
         res.status(200).json({
             message: "User Logged In sucessfully",
