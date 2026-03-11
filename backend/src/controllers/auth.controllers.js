@@ -60,10 +60,13 @@ async function loginUser(req, res) {
 }
 
 function logoutUser(req, res) {
-    res.clearCookie("token");
-    res.status(200).json({
-        message: "User logged out sucessfully"
-    })
+    try {
+        res.clearCookie("token");
+        return res.status(200).json({ message: "User logged out successfully" });
+    } catch (err) {
+        console.error("logoutUser error:", err.message);
+        return res.status(500).json({ message: "Logout failed" });
+    }
 }
 
 async function registerFoodpartner(req, res) {
@@ -121,10 +124,13 @@ async function loginFoodpartner(req, res) {
 }
 
 function logoutFoodpartner(req, res) {
-    res.clearCookie("token");
-    res.status(200).json({
-        message: "FoodPartner logged out sucessfully"
-    })
+    try {
+        res.clearCookie("token");
+        return res.status(200).json({ message: "Food partner logged out successfully" });
+    } catch (err) {
+        console.error("logoutFoodpartner error:", err.message);
+        return res.status(500).json({ message: "Logout failed" });
+    }
 }
 
 async function getAllFoodpartners(req, res) {
@@ -160,9 +166,14 @@ async function updateFoodpartnerImage(req, res) {
 }
 
 function getUserMe(req, res) {
-    return res.status(200).json({
-        user: { id: req.user._id, fullname: req.user.fullname, email: req.user.email }
-    });
+    try {
+        return res.status(200).json({
+            user: { id: req.user._id, fullname: req.user.fullname, email: req.user.email }
+        });
+    } catch (err) {
+        console.error("getUserMe error:", err.message);
+        return res.status(500).json({ message: "Failed to fetch user info" });
+    }
 }
 
 module.exports = {
