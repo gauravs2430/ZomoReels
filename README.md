@@ -81,7 +81,8 @@ The platform has **two separate roles**:
 | **Multer** | 2.x | Handles `multipart/form-data` for video & image uploads; uses in-memory buffer storage |
 | **cookie-parser** | 1.x | Parses cookies from incoming requests so middleware can read JWT |
 | **UUID** | 13.x | Generates unique filenames before uploading to ImageKit (prevents collision) |
-| **CORS** | 2.x | Allows requests from frontend origin (`localhost:5173`) with cookies |
+| **Zod** | 3.x | Schema-based input validation on every POST endpoint — rejects malformed/missing data before it hits the controller |
+| **CORS** | 2.x | Allows requests from the configured frontend origin (`FRONTEND_URL` env var) with cookies |
 | **dotenv** | 17.x | Loads `.env` variables at startup |
 | **nodemon** | 3.x | Auto-restarts backend during development |
 
@@ -107,7 +108,9 @@ Zomato-app/
 │       │   └── food.controllers.js    ← Upload reel, get reels, get partner reels, like/unlike, save/unsave,
 │       │                                 get saved items, public restaurant profile by ID
 │       ├── middlewares/
-│       │   └── authFP.middleware.js   ← JWT auth guards: authFoodPartnerMiddleware & authUserMiddleware
+│       │   ├── authFP.middleware.js   ← JWT auth guards: authFoodPartnerMiddleware & authUserMiddleware
+│       │   │                            Handles TokenExpiredError separately — clears stale cookie, returns 401
+│       │   └── validate.middleware.js ← Reusable validate(schema) factory — runs Zod schemas before controllers
 │       ├── models/                    ← Mongoose schemas (define DB structure)
 │       │   ├── user.models.js         ← User: fullname, email, hashed password
 │       │   ├── foodpartner.models.js  ← FoodPartner: fullname, contact, phone, address, email, password, image URL
@@ -119,6 +122,8 @@ Zomato-app/
 │       │   └── food.routes.js         ← /api/food/* (upload, fetch, like, save, saved, public restaurant)
 │       ├── services/
 │       │   └── storage.services.js    ← ImageKit integration: fileUpload() for videos, imageUpload() for images
+│       ├── validators/
+│       │   └── validators.js          ← Zod schemas for every POST body (6 schemas total)
 │       └── db/
 │           └── db.js                  ← Mongoose connection to MongoDB
 │
@@ -394,22 +399,101 @@ Most tutorials store JWT tokens in `localStorage`. This project uses **HttpOnly 
 | `localStorage` | ✅ Yes — any JS on page can read it | ❌ No | ❌ |
 | HttpOnly Cookie | ❌ No — JS cannot access it | ✅ Yes (mitigated by CORS + credentials policy) | ✅ |
 
-- On login, the server calls `res.cookie("token", jwt)` — the browser stores it automatically
-- On every request from React, Axios sends `withCredentials: true` — cookie is attached automatically  
+- On login, the server calls `res.cookie("token", jwt, { httpOnly: true, maxAge: 7d })` — the browser stores and auto-expires it
+- On every request from React, Axios sends `withCredentials: true` — cookie is attached automatically
 - Express reads it via `req.cookies.token` (enabled by `cookie-parser`)
 - Middleware verifies and decodes the JWT, then attaches the full user/partner document to `req`
 
+### JWT Expiry + Cookie Matching
+
+Tokens are signed with `expiresIn: '7d'` and cookies are set with `maxAge: 7 * 24 * 60 * 60 * 1000` (7 days in ms). Both expire together so the browser never sends a dead token on future requests.
+
+### Token Expiry Handling in Middleware
+
+Instead of a generic `"Invalid token"` error, the auth middleware distinguishes between two failure types:
+
+```js
+catch (err) {
+    if (err.name === "TokenExpiredError") {
+        res.clearCookie("token");  // wipe the stale cookie from the browser
+        return res.status(401).json({ message: "Session expired. Please login again." });
+    }
+    return res.status(401).json({ message: "Invalid session. Please login again." });
+}
+```
+
+This ensures a clean UX: expired sessions prompt a re-login rather than a cryptic error, and the browser doesn't keep sending dead cookies.
+
+### Input Validation with Zod
+
+Every POST endpoint is protected by a `validate(schema)` middleware that runs **before** the controller:
+
+```
+Request body → validate(schema) → FAIL: 400 + field-level errors (controller never runs)
+                                → PASS: sanitized data passed to controller
+```
+
+6 Zod schemas cover all POST routes — emails are lowercased, strings trimmed, ObjectIds verified to be 24 chars, passwords checked for minimum length. Malformed data never reaches MongoDB.
+
 ### Dual-Role Auth
 
-Both Users and Food Partners use the same `token` cookie name but go through **separate middleware functions** (`authUserMiddleware` and `authFoodPartnerMiddleware`). Each middleware looks up the decoded ID in its respective MongoDB collection, so a user token cannot impersonate a food partner and vice versa.
+Both Users and Food Partners use the same `token` cookie name but go through **separate middleware functions** (`authUserMiddleware` and `authFoodPartnerMiddleware`). Each middleware looks up the decoded ID in its respective MongoDB collection, so a user token cannot impersonate a food partner and vice versa. A null check is also present — if the account was deleted after the token was issued, the request is rejected.
+
+### Environment-Based CORS
+
+CORS is configured via `process.env.FRONTEND_URL` — not hardcoded to any domain. This means the same backend works in both local development (`http://localhost:5173`) and production (`https://your-app.vercel.app`) with zero code changes.
 
 ### Centralized Axios Instance
 
 All frontend API calls go through `src/api/axiosInstance.js` — a single Axios instance pre-configured with:
-- `baseURL` pointing to the backend
+- `baseURL` from `VITE_API_URL` environment variable
 - `withCredentials: true` (so cookies are sent automatically on every request)
 
-This means no individual component needs to manually configure the base URL or credentials — one change point for the entire app.
+---
+
+## 🌐 Deployment
+
+This project is configured for deployment on **Vercel** (frontend) + **Render** (backend) + **MongoDB Atlas** (database).
+
+### Backend — Render
+
+1. New Web Service → connect GitHub repo
+2. Set **Root Directory** to `backend`, **Start Command** to `node server.js`
+3. Add environment variables in the Render dashboard:
+
+```env
+MONGODB_CONNECTION   = mongodb+srv://user:pass@cluster.mongodb.net/zomoreels
+JWT_SECRET           = your_secret_key
+IMAGEKIT_PUBLIC_KEY  = ...
+IMAGEKIT_PRIVATE_KEY = ...
+IMAGEKIT_URL_ENDPOINT = https://ik.imagekit.io/your_id
+FRONTEND_URL         = https://your-app.vercel.app
+```
+> ⚠️ Do **not** add `PORT` — Render injects it automatically.
+
+### Frontend — Vercel
+
+1. New Project → connect GitHub repo
+2. Set **Root Directory** to `frontend`, Framework Preset: **Vite**
+3. Add environment variable:
+
+```env
+VITE_API_URL = https://your-backend.onrender.com
+```
+
+The `vercel.json` at `frontend/vercel.json` handles SPA routing — refreshing on any sub-route (e.g. `/restaurant/:id`) returns the React app instead of a 404.
+
+### Cross-Domain Cookie Note
+
+When frontend and backend are on different domains (Vercel ↔ Render), cookies require:
+```js
+res.cookie("token", token, {
+    httpOnly: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    sameSite: "none",  // allows cross-domain cookies
+    secure: true,      // required with sameSite: 'none' (HTTPS only)
+});
+```
 
 ---
 
@@ -435,11 +519,12 @@ npm install
 Create `/backend/.env`:
 ```env
 PORT=3002
-MONGO_URI=your_mongodb_connection_string
+MONGODB_CONNECTION=your_mongodb_connection_string
 JWT_SECRET=your_super_secret_key
 IMAGEKIT_PUBLIC_KEY=your_imagekit_public_key
 IMAGEKIT_PRIVATE_KEY=your_imagekit_private_key
 IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/your_imagekit_id
+FRONTEND_URL=http://localhost:5173
 ```
 
 Start backend:
@@ -456,7 +541,12 @@ npm run dev
 # App running on http://localhost:5173
 ```
 
-> ⚠️ The frontend calls `http://localhost:3002` via the centralized Axios instance — make sure the backend is running before using the frontend.
+Create `/frontend/.env`:
+```env
+VITE_API_URL=http://localhost:3002
+```
+
+> ⚠️ Make sure the backend is running before starting the frontend. The Axios instance reads `VITE_API_URL` from the env file — without it, all API calls go to `undefined`.
 
 ---
 
@@ -478,12 +568,19 @@ npm run dev
 - [x] Centralized Axios instance (no hardcoded URLs in components)
 - [x] Fully responsive UI (desktop, tablet, mobile)
 - [x] Dark mode via `prefers-color-scheme`
-- [ ] Comments on food reels
+- [x] **Zod input validation** on all POST endpoints (field-level errors, type coercion)
+- [x] **Try/catch error handling** on every controller function
+- [x] **JWT expiry** (`expiresIn: '7d'`) + cookie `maxAge` synced to 7 days
+- [x] **Token expiry handling** — middleware clears expired cookie, returns 401 with clear message
+- [x] **Deleted account guard** — middleware rejects valid tokens for deleted DB users
+- [x] **Environment-based CORS** (`FRONTEND_URL` env var — works for local & production)
+- [x] **Deployment-ready** — Vercel (frontend) + Render (backend) + `vercel.json` for SPA routing
+- [ ] Comments on food reels (Socket.io real-time)
 - [ ] Location-based restaurant filtering (geolocation)
 - [ ] Follow a restaurant — get notified on new reels
 - [ ] Admin panel for platform management
 - [ ] Payment & ordering system integration
-- [ ] Refresh token + token expiry (currently tokens don't expire)
+- [ ] CI/CD pipeline with GitHub Actions
 
 ---
 
@@ -497,7 +594,7 @@ npm run dev
 
 > **🚧 This project is actively under development.**
 >
-> The core architecture is in place and major features are functional. The codebase is being actively expanded with new features, UI polish, and security improvements. Not yet production-ready — but the foundations (auth, routing, media pipeline, dual-role system, like/save system, public profiles) are solid and built with industry-standard patterns.
+> Core features are fully functional and the codebase has been hardened with production-grade practices: input validation (Zod), error handling (try/catch on all controllers), JWT expiry with cookie lifecycle management, environment-based CORS, and deployment configuration for Vercel + Render. The foundations are solid and built with industry-standard patterns.
 >
 > Feel free to explore the code, raise issues, or suggest improvements!
 
