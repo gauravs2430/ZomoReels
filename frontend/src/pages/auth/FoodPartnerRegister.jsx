@@ -17,21 +17,16 @@ const FoodPartnerRegister = () => {
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
 
+    const [error, setError] = useState("");
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError("");
 
-        // Read directly from the form — state setters are async and
-        // won't update the local variable until the next render,
-        // so using state here would send the previous (often empty) values.
-        const fullname = e.target.fullname.value;
-        const email = e.target.email.value;
-        const password = e.target.password.value;
-        const contactName = e.target.contactName.value;
-        const phone = e.target.phone.value;
-        const address = e.target.address.value;
-
+        // The onChange on each input keeps state in sync on every keystroke.
+        // By the time the user hits submit, all state values are up-to-date and correct.
         try {
-            const response = await axiosInstance.post("/api/auth/foodpartner/register", {
+            await axiosInstance.post("/api/auth/foodpartner/register", {
                 fullname,
                 email,
                 password,
@@ -49,10 +44,14 @@ const FoodPartnerRegister = () => {
 
             navigate('/foodpartner/profile');
 
+        } catch (err) {
+            const validationErrors = err.response?.data?.errors;
+            if (validationErrors && validationErrors.length > 0) {
+                setError(validationErrors.map(e => e.message).join(" \u2022 "));
+            } else {
+                setError(err.response?.data?.message || "Registration failed. Please try again.");
+            }
         }
-        catch (err) {
-            // registration failed — fields remain for retry
-        };
 
     };
 
@@ -64,6 +63,12 @@ const FoodPartnerRegister = () => {
                 <p className="auth-subtitle">Grow your business with us.</p>
 
                 <form className="auth-form" onSubmit={handleSubmit}>
+                    {error && (
+                        <p style={{ color: "#e53e3e", fontSize: "0.85rem", marginBottom: "12px", lineHeight: "1.5" }}>
+                            {error}
+                        </p>
+                    )}
+
                     <div className="form-group">
                         <label className="form-label" htmlFor="fullname">Restaurant Full Name</label>
                         <input
@@ -145,8 +150,8 @@ const FoodPartnerRegister = () => {
                         Looking to order food? Register as User
                     </Link>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 
