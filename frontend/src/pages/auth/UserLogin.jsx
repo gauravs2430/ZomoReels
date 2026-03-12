@@ -12,32 +12,29 @@ const UserLogin = () => {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
 
-        setEmail(e.target.email.value);
-        setPassword(e.target.password.value);
-
-
+        // email and password state are kept in sync via onChange on each input
         try {
-
-            const response = await axiosInstance.post("/api/auth/user/login", {
-                email: email,
-                password: password
-            }, {});
+            await axiosInstance.post("/api/auth/user/login", { email, password });
 
             setEmail("");
             setPassword("");
-
             navigate('/user/Home');
 
-        }
-        catch (err) {
-            setPassword("");
+        } catch (err) {
+            const validationErrors = err.response?.data?.errors;
+            if (validationErrors && validationErrors.length > 0) {
+                setError(validationErrors.map(e => e.message).join(" \u2022 "));
+            } else {
+                setError(err.response?.data?.message || "Invalid email or password.");
+            }
+            setPassword(""); // clear password only on failure
         };
-
-
 
     }
 
@@ -49,6 +46,11 @@ const UserLogin = () => {
                 <p className="auth-subtitle">Login to continue ordering delicious food.</p>
 
                 <form className="auth-form" onSubmit={handleSubmit}>
+                    {error && (
+                        <p style={{ color: "#e53e3e", fontSize: "0.85rem", marginBottom: "12px", lineHeight: "1.5" }}>
+                            {error}
+                        </p>
+                    )}
                     <div className="form-group">
                         <label className="form-label" htmlFor="email">Email</label>
                         <input

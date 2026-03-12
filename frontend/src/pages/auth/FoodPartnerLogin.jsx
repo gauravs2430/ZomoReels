@@ -11,28 +11,26 @@ const FoodPartnerLogin = () => {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
     const handleSubmit = async (e) => {
-
         e.preventDefault();
-
-
+        setError('');
 
         try {
-            const response = await axiosInstance.post("/api/auth/foodpartner/login", {
-                email,
-                password
-            });
-
+            await axiosInstance.post("/api/auth/foodpartner/login", { email, password });
             setEmail("");
             setPassword("");
-
             navigate('/foodpartner/profile');
-
-        } catch (error) {
-            // login failed — form fields remain for retry
+        } catch (err) {
+            const validationErrors = err.response?.data?.errors;
+            if (validationErrors && validationErrors.length > 0) {
+                setError(validationErrors.map(e => e.message).join(" \u2022 "));
+            } else {
+                setError(err.response?.data?.message || "Invalid email or password.");
+            }
+            setPassword("");
         };
-
     }
 
 
@@ -44,6 +42,11 @@ const FoodPartnerLogin = () => {
                 <p className="auth-subtitle">Manage your restaurant and orders.</p>
 
                 <form className="auth-form" onSubmit={handleSubmit}>
+                    {error && (
+                        <p style={{ color: "#e53e3e", fontSize: "0.85rem", marginBottom: "12px", lineHeight: "1.5" }}>
+                            {error}
+                        </p>
+                    )}
                     <div className="form-group">
                         <label className="form-label" htmlFor="email">Business Email</label>
                         <input

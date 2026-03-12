@@ -11,29 +11,34 @@ const UserRegister = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
 
         try {
-            const response = await axiosInstance.post("/api/auth/user/register", {
+            await axiosInstance.post("/api/auth/user/register", {
                 fullname: name,
                 email,
                 password
-            })
+            });
 
-            setName("")
-            setEmail("")
-            setPassword("")
+            setName("");
+            setEmail("");
+            setPassword("");
 
             navigate("/user/Home");
 
-        }
-        catch (err) {
-
-            setName("")
-            setEmail("")
-            setPassword("")
+        } catch (err) {
+            // Show Zod field-level errors if present, otherwise generic message
+            const validationErrors = err.response?.data?.errors;
+            if (validationErrors && validationErrors.length > 0) {
+                setError(validationErrors.map(e => e.message).join(" • "));
+            } else {
+                setError(err.response?.data?.message || "Registration failed. Please try again.");
+            }
+            // Don't clear fields on error — user needs to correct their input
         }
     }
 
@@ -45,6 +50,11 @@ const UserRegister = () => {
                 <p className="auth-subtitle">Sign up to start your food journey.</p>
 
                 <form className="auth-form" onSubmit={handleSubmit}>
+                    {error && (
+                        <p style={{ color: "#e53e3e", fontSize: "0.85rem", marginBottom: "12px", lineHeight: "1.5" }}>
+                            {error}
+                        </p>
+                    )}
                     <div className="form-group">
                         <label className="form-label" htmlFor="name">Full Name</label>
                         <input
