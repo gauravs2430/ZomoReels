@@ -22,7 +22,9 @@ async function registerUser(req, res) {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
         res.cookie("token", token, {
             httpOnly: true,
-            maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days in milliseconds — matches JWT expiresIn: '7d'
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            sameSite: "none",  // required for cross-domain (Vercel ↔ Render)
+            secure: true       // required when sameSite is 'none' (HTTPS only)
         });
 
         res.status(201).json({
@@ -52,7 +54,9 @@ async function loginUser(req, res) {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
         res.cookie("token", token, {
             httpOnly: true,
-            maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days in milliseconds — matches JWT expiresIn: '7d'
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            sameSite: "none",
+            secure: true
         });
 
         res.status(200).json({
@@ -67,7 +71,7 @@ async function loginUser(req, res) {
 
 function logoutUser(req, res) {
     try {
-        res.clearCookie("token");
+        res.clearCookie("token", { sameSite: "none", secure: true });
         return res.status(200).json({ message: "User logged out successfully" });
     } catch (err) {
         console.error("logoutUser error:", err.message);
@@ -92,7 +96,9 @@ async function registerFoodpartner(req, res) {
         const token = jwt.sign({ id: foodpartner._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
         res.cookie("token", token, {
             httpOnly: true,
-            maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days in milliseconds — matches JWT expiresIn: '7d'
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            sameSite: "none",
+            secure: true
         });
 
         res.status(201).json({
@@ -122,7 +128,9 @@ async function loginFoodpartner(req, res) {
         const token = jwt.sign({ id: foodpartner._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
         res.cookie("token", token, {
             httpOnly: true,
-            maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days in milliseconds — matches JWT expiresIn: '7d'
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            sameSite: "none",
+            secure: true
         });
 
         res.status(200).json({
@@ -137,7 +145,7 @@ async function loginFoodpartner(req, res) {
 
 function logoutFoodpartner(req, res) {
     try {
-        res.clearCookie("token");
+        res.clearCookie("token", { sameSite: "none", secure: true });
         return res.status(200).json({ message: "Food partner logged out successfully" });
     } catch (err) {
         console.error("logoutFoodpartner error:", err.message);

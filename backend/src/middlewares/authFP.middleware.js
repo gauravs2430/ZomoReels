@@ -32,7 +32,7 @@ async function authFoodPartnerMiddleware(req, res, next) {
         if (err.name === "TokenExpiredError") {
             // JWT has passed its expiresIn duration — clear the dead cookie
             // so the browser doesn't keep sending it on future requests
-            res.clearCookie("token");
+            res.clearCookie("token", { sameSite: "none", secure: true });
             return res.status(401).json({ message: "Session expired. Please login again." });
         }
         return res.status(401).json({ message: "Invalid session. Please login again." });
@@ -64,7 +64,7 @@ async function authUserMiddleware(req, res, next) {
     } catch (err) {
         if (err.name === "TokenExpiredError") {
             // Clear the expired cookie — user must log in again
-            res.clearCookie("token");
+            res.clearCookie("token", { sameSite: "none", secure: true });
             return res.status(401).json({ message: "Session expired. Please login again." });
         }
         return res.status(401).json({ message: "Invalid session. Please login again." });
