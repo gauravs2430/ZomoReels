@@ -20,13 +20,15 @@ const FoodPartnerRegister = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        setFullname(e.target.fullname.value);
-        setEmail(e.target.email.value);
-        setPassword(e.target.password.value);
-        setContactName(e.target.contactName.value);
-        setPhone(e.target.phone.value);
-        setAddress(e.target.address.value);
-
+        // Read directly from the form — state setters are async and
+        // won't update the local variable until the next render,
+        // so using state here would send the previous (often empty) values.
+        const fullname = e.target.fullname.value;
+        const email = e.target.email.value;
+        const password = e.target.password.value;
+        const contactName = e.target.contactName.value;
+        const phone = e.target.phone.value;
+        const address = e.target.address.value;
 
         try {
             const response = await axiosInstance.post("/api/auth/foodpartner/register", {
@@ -36,7 +38,7 @@ const FoodPartnerRegister = () => {
                 contactName,
                 phone,
                 address
-            })
+            });
 
             setFullname("");
             setEmail("");
@@ -51,7 +53,6 @@ const FoodPartnerRegister = () => {
         catch (err) {
             // registration failed — fields remain for retry
         };
-
 
     };
 
