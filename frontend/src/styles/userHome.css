@@ -87,6 +87,59 @@
     display: none;
 }
 
+/* ── Empty State ───────────────────────────────────────────── */
+.empty-state {
+    height: calc(100vh - 64px);
+    width: 100%;
+    background-color: #0a0a0a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    text-align: center;
+    padding: 32px 24px;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    line-height: 1;
+    filter: drop-shadow(0 0 18px rgba(255, 90, 54, 0.35));
+}
+
+.empty-state-title {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.empty-state-sub {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.45);
+    line-height: 1.7;
+    max-width: 280px;
+    margin: 0;
+}
+
+
 /* Each reel card = exactly one viewport-minus-nav height */
 .video-card {
     height: calc(100vh - 64px);

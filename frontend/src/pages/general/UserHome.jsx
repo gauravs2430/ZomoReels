@@ -152,9 +152,10 @@ const SavedFeed = () => {
 
     if (loading) return <div className="loading-state">Loading saved reels...</div>;
     if (savedVideos.length === 0) return (
-        <div className="loading-state">
-            🏷️ No saved reels yet!<br />
-            <span style={{ fontSize: '1rem', fontWeight: 600 }}>Tap 🏷️ on any reel to save it.</span>
+        <div className="empty-state">
+            <div className="empty-state-icon">🏷️</div>
+            <h2 className="empty-state-title">Nothing saved yet</h2>
+            <p className="empty-state-sub">Tap the bookmark icon on any reel to save it here.</p>
         </div>
     );
 
@@ -226,7 +227,11 @@ const UserHome = () => {
                         {!loaded ? (
                             <div className="loading-state">Loading delicious feed...</div>
                         ) : videos.length === 0 ? (
-                            <div className="loading-state">🍽️ No reels yet! Check back soon.</div>
+                            <div className="empty-state">
+                                <div className="empty-state-icon">🍽️</div>
+                                <h2 className="empty-state-title">No reels yet</h2>
+                                <p className="empty-state-sub">Food partners haven't uploaded any reels yet.<br />Check back soon!</p>
+                            </div>
                         ) : (
                             videos.map(video => (
                                 <VideoCard
