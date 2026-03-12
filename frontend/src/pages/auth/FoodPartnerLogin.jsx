@@ -24,15 +24,13 @@ const FoodPartnerLogin = () => {
                 password
             });
 
-            console.log("Login Response:", response.data);
-
             setEmail("");
             setPassword("");
 
             navigate('/foodpartner/profile');
 
         } catch (error) {
-            console.log("Error", error.response.data);
+            // login failed — form fields remain for retry
         };
 
     }

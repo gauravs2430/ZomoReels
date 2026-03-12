@@ -27,8 +27,6 @@ const UserLogin = () => {
                 password: password
             }, {});
 
-            console.log(response.data);
-
             setEmail("");
             setPassword("");
 
@@ -36,7 +34,6 @@ const UserLogin = () => {
 
         }
         catch (err) {
-            console.log("Error", err);
             setPassword("");
         };
 

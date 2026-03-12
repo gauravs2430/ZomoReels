@@ -5,7 +5,7 @@ import "../../styles/foodPartnerHome.css"; // New dashboard styles
 import { useNavigate } from "react-router-dom";
 
 // Duplicated VideoCard for now as per plan
- 
+
 
 const FoodPartnerHome = () => {
     const navigate = useNavigate();
@@ -78,7 +78,6 @@ const FoodPartnerHome = () => {
             const response = await axiosInstance.post("/api/food/addItem", formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
-            console.log("Upload success:", response.data);
             setUploadStatus('success');
             setFoodName("");
             setDescription("");

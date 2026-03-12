@@ -27,7 +27,6 @@ const FoodPartnerRegister = () => {
         setPhone(e.target.phone.value);
         setAddress(e.target.address.value);
 
-        console.log(fullname, email, password, contactName, phone, address);
 
         try {
             const response = await axiosInstance.post("/api/auth/foodpartner/register", {
@@ -38,8 +37,6 @@ const FoodPartnerRegister = () => {
                 phone,
                 address
             })
-
-            console.log(response.data);
 
             setFullname("");
             setEmail("");
@@ -52,7 +49,7 @@ const FoodPartnerRegister = () => {
 
         }
         catch (err) {
-            console.log("Error", err);
+            // registration failed — fields remain for retry
         };
 
 

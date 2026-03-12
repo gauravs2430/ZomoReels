@@ -22,8 +22,6 @@ const UserRegister = () => {
                 password
             })
 
-            console.log(response.data);
-
             setName("")
             setEmail("")
             setPassword("")
@@ -32,7 +30,6 @@ const UserRegister = () => {
 
         }
         catch (err) {
-            console.log("Error", err);
 
             setName("")
             setEmail("")
