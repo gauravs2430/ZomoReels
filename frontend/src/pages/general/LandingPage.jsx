@@ -83,32 +83,24 @@ const LandingPage = () => {
                 <div className="footer-columns">
                     <div className="footer-column">
                         <h4>About ZomoReels</h4>
-                        <ul>
+                        <ul style={{ display: "flex", flexDirection: "column"}}>
                             <li>Who We Are</li>
                             <li>Blog</li>
                             <li>Work With Us</li>
                             <li>Contact Us</li>
                         </ul>
                     </div>
-                    <div className="footer-column">
-                        <h4>Zomaverse</h4>
-                        <ul>
-                            <li>Zomato</li>
-                            <li>Blinkit</li>
-                            <li>Feeding India</li>
-                            <li>Zomaland</li>
-                        </ul>
-                    </div>
+
                     <div className="footer-column">
                         <h4>For Restaurants</h4>
-                        <ul>
+                        <ul style={{ display: "flex", flexDirection: "column"}} >
                             <li>Partner With Us</li>
                             <li>Apps For You</li>
                         </ul>
                     </div>
                     <div className="footer-column">
                         <h4>Learn More</h4>
-                        <ul>
+                        <ul style={{ display: "flex", flexDirection: "column"}}  >
                             <li>Privacy</li>
                             <li>Security</li>
                             <li>Terms</li>
