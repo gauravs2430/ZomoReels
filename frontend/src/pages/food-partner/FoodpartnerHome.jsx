@@ -4,8 +4,50 @@ import "../../styles/userHome.css"; // Reuse existing styles for video feed
 import "../../styles/foodPartnerHome.css"; // New dashboard styles
 import { useNavigate } from "react-router-dom";
 
-// Duplicated VideoCard for now as per plan
+const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
+    const videoRef = useRef(null);
+    const [isTruncated, setIsTruncated] = useState(true);
 
+    useEffect(() => {
+        if (isActive && videoRef.current) {
+            videoRef.current.currentTime = 0;
+            videoRef.current.play().catch(err => console.log("Autoplay prevented:", err));
+        } else if (videoRef.current) {
+            videoRef.current.pause();
+        }
+    }, [isActive]);
+
+    return (
+        <div className="video-card">
+            <video
+                ref={videoRef}
+                className="video-player"
+                src={video.video}
+                loop
+                muted={isMuted}
+                playsInline
+                onClick={toggleMute}
+            />
+            <div className="video-overlay">
+                <div className="store-info">
+                    <h3 className="store-name">{video.foodname}</h3>
+                    <p
+                        className={`video-description ${isTruncated ? 'truncated' : ''}`}
+                        onClick={() => setIsTruncated(!isTruncated)}
+                    >
+                        {video.description}
+                    </p>
+                </div>
+            </div>
+            <div className="sidebar-actions">
+                <div className="action-btn">
+                    <span className="action-icon">❤️</span>
+                    <span className="action-label">{video.likeCount || 0}</span>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const FoodPartnerHome = () => {
     const navigate = useNavigate();
