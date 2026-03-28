@@ -5,5 +5,5 @@ yarn-error.log*
 .env
 
 backend/.env
-
-
+# Notes & Guides
+OPEN_SOURCE_GUIDE.md
