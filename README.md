@@ -550,6 +550,206 @@ VITE_API_URL=http://localhost:3002
 
 ---
 
+## 🤖 AI Voice Agent — Zomi (LiveKit Integration)
+
+ZomoReels includes a dedicated AI voice agent named **Zomi**, built using the [LiveKit no-code Agent Builder](https://cloud.livekit.io). Zomi is a conversational food discovery assistant that talks to users, understands what they are craving, and fetches live recommendations directly from the ZomoReels database.
+
+### How the Agent Connects to the Backend
+
+Zomi uses **LiveKit HTTP Tools** — a no-code way to call any REST API from inside a voice agent. When a user speaks a request, the LLM inside the agent decides which tool to invoke, constructs the query parameters from the conversation, hits the ZomoReels API, and speaks the results back to the user.
+
+```
+User speaks → LiveKit LLM → HTTP Tool → ZomoReels API → MongoDB → JSON response → Agent speaks result
+```
+
+The agent does **not** touch the UI — it only talks to the backend APIs and speaks responses aloud. It is a voice layer on top of your existing Express + MongoDB server.
+
+---
+
+### Agent API Routes — `/api/agent`
+
+These routes are public, read-only, and purpose-built for the AI agent. They are separate from the main `/api/food` and `/api/auth` routes to ensure the agent cannot modify any user data.
+
+#### `GET /api/agent/recommendations`
+
+Fetches food reels from the database based on what the user is craving. Called by the agent when a user expresses a food preference.
+
+| Parameter   | Type   | Required | Description |
+|---|---|---|---|
+| `craving`   | string | ❌ | Free-text search across food name, description, and tags (e.g. `pizza`, `spicy`) |
+| `tag`       | string | ❌ | Filter by a specific cuisine tag (e.g. `biryani`, `dessert`, `vegan`) |
+| `restaurant`| string | ❌ | Filter results to a specific restaurant name (e.g. `Spice Garden`) |
+| `minLikes`  | number | ❌ | Return only items with at least this many likes — use for "popular" queries |
+| `limit`     | number | ❌ | Max number of results (default: `5`, max: `10`) |
+
+**Example request the agent makes:**
+```
+GET /api/agent/recommendations?craving=spicy&minLikes=5&limit=3
+```
+
+**Example response:**
+```json
+{
+  "recommendations": [
+    {
+      "foodname": "Spicy Paneer Tikka",
+      "restaurant": "The Tandoor House",
+      "restaurantAddress": "MG Road, Bangalore",
+      "description": "Marinated paneer grilled with hot spices",
+      "tags": ["spicy", "paneer", "starter"],
+      "likeCount": 42
+    }
+  ]
+}
+```
+
+---
+
+#### `GET /api/agent/restaurants`
+
+Fetches restaurant listings from the database. Called when a user asks what restaurants are available or wants to search by area.
+
+| Parameter | Type   | Required | Description |
+|---|---|---|---|
+| `name`    | string | ❌ | Search restaurants by name |
+| `address` | string | ❌ | Filter by area or locality keyword (e.g. `Bandra`, `Connaught Place`) |
+| `limit`   | number | ❌ | Max results (default: `5`, max: `10`) |
+
+**Example request:**
+```
+GET /api/agent/restaurants?address=Bandra
+```
+
+**Example response:**
+```json
+{
+  "restaurants": [
+    {
+      "name": "Mumbai Street Eats",
+      "contactName": "Rohan Mehta",
+      "address": "Bandra West, Mumbai",
+      "phone": "9876543210",
+      "hasAvatar": true
+    }
+  ]
+}
+```
+
+---
+
+### How the Controller Code Works — Deep Dive
+
+This section explains exactly what happens inside `backend/src/controllers/agent.controllers.js` when the agent hits the recommendations endpoint.
+
+#### Step 1 — Extract query parameters
+
+```js
+const { craving, tag, restaurant, minLikes, limit } = req.query;
+```
+
+The agent sends these as URL query strings. Express extracts them from `req.query`. All parameters are optional — the agent sends only what is relevant from the user's spoken request.
+
+#### Step 2 — Build a dynamic MongoDB filter
+
+```js
+const andConditions = [];
+
+if (craving) {
+    andConditions.push({
+        $or: [
+            { foodname:    { $regex: craving, $options: "i" } },
+            { description: { $regex: craving, $options: "i" } },
+            { tags:        { $in: [new RegExp(craving, "i")] } }
+        ]
+    });
+}
+```
+
+Each condition is pushed into an array only if the parameter was provided. `$regex` with `$options: "i"` makes the search case-insensitive. The `$or` operator means a food item matches if the craving word appears in **any** of the three fields. At the end, all conditions are combined with `$and`, so a query like `?craving=spicy&minLikes=10` finds items that are **both** spicy **and** have 10+ likes.
+
+#### Step 3 — Populate the food partner (restaurant)
+
+```js
+const foods = await foodModel
+    .find(foodQuery)
+    .populate("foodpartner", "fullname address")
+    .sort({ likeCount: -1 })
+    .limit(resultLimit);
+```
+
+Each `Food` document only stores a reference ID (`ObjectId`) pointing to a `FoodPartner` document. `.populate("foodpartner", "fullname address")` automatically fetches the linked restaurant and attaches its `fullname` and `address` to each food result in a single database query. Without populate, the agent would only see a raw ID and couldn't tell the user where to go. Results are sorted by `likeCount` descending — most popular first.
+
+#### Step 4 — Post-filter by restaurant name
+
+```js
+const filtered = restaurant
+    ? foods.filter(f =>
+        f.foodpartner?.fullname?.toLowerCase().includes(restaurant.toLowerCase())
+    )
+    : foods;
+```
+
+Because the restaurant name lives on the **joined** document (not the food document), we filter it in JavaScript after the database query returns. The optional chaining (`?.`) prevents crashes if a food item's partner was deleted.
+
+#### Step 5 — Shape the response for the LLM
+
+```js
+const recommendations = filtered.map(food => ({
+    foodname:          food.foodname,
+    restaurant:        food.foodpartner?.fullname    || "Unknown Restaurant",
+    restaurantAddress: food.foodpartner?.address     || "Address not available",
+    description:       food.description              || "No description available",
+    tags:              food.tags                     || [],
+    likeCount:         food.likeCount                || 0
+}));
+```
+
+The raw Mongoose documents contain internal fields like `__v`, `_id`, and the full partner `ObjectId`. We strip all of that and return only what the LLM needs to speak a clear recommendation. Fallback strings (`|| "Unknown"`) ensure the agent never says "undefined" aloud.
+
+---
+
+### Configuring the HTTP Tools in LiveKit Agent Builder
+
+#### Tool 1 — `get_recommendations`
+
+| Field        | Value |
+|---|---|
+| **Tool name**  | `get_recommendations` |
+| **Description**| Use this tool when the user mentions food they are craving, a cuisine type, or wants popular dishes. Extract what the user wants and pass it as `craving`. If they want popular items, set `minLikes` to 5 or more. |
+| **HTTP Method**| `GET` |
+| **URL**        | `https://zomoreels.onrender.com/api/agent/recommendations` |
+| **Parameter 1**| Name: `craving` · Type: `string` · Description: The food or cuisine the user is craving |
+| **Parameter 2**| Name: `tag` · Type: `string` · Description: A specific food category or tag like biryani or dessert |
+| **Parameter 3**| Name: `restaurant` · Type: `string` · Description: A restaurant name to filter results |
+| **Parameter 4**| Name: `minLikes` · Type: `number` · Description: Minimum likes for popularity filtering |
+| **Parameter 5**| Name: `limit` · Type: `number` · Description: Number of results to return (max 10) |
+| **Silent**    | `OFF` |
+
+#### Tool 2 — `get_restaurants`
+
+| Field        | Value |
+|---|---|
+| **Tool name**  | `get_restaurants` |
+| **Description**| Use this tool when the user asks what restaurants are available, or searches by area or restaurant name. |
+| **HTTP Method**| `GET` |
+| **URL**        | `https://zomoreels.onrender.com/api/agent/restaurants` |
+| **Parameter 1**| Name: `name` · Type: `string` · Description: Restaurant name to search for |
+| **Parameter 2**| Name: `address` · Type: `string` · Description: Area or locality like Bandra or MG Road |
+| **Parameter 3**| Name: `limit` · Type: `number` · Description: Number of results to return |
+| **Silent**    | `OFF` |
+
+---
+
+### Files Added for Agent Integration
+
+| File | Purpose |
+|---|---|
+| `backend/src/controllers/agent.controllers.js` | All agent endpoint logic — dynamic MongoDB queries, populate, response shaping |
+| `backend/src/routes/agent.routes.js` | Mounts agent routes at `/api/agent/*` |
+| `agent_prompt.md` | System prompt used to configure the Zomi agent persona in LiveKit |
+
+---
+
 ## 🗺️ Roadmap
 
 - [x] Dual-role authentication — User & Food Partner with HttpOnly JWT cookies
@@ -560,7 +760,7 @@ VITE_API_URL=http://localhost:3002
 - [x] Restaurant search/filter on landing page
 - [x] Tags support on food items
 - [x] Like / unlike food reels (real DB count, optimistic UI)
-- [x] Save / unsave food reels (bookmarks, per-user)
+- [x] Save / unsave food reels (bookmarks, per-user)\
 - [x] Saved Reels tab in user feed (bottom navigation: Home / Saved)
 - [x] Public Restaurant Profile page — auth-gated reels & order button
 - [x] Landing page restaurant cards → Restaurant Profile page
@@ -575,6 +775,7 @@ VITE_API_URL=http://localhost:3002
 - [x] **Deleted account guard** — middleware rejects valid tokens for deleted DB users
 - [x] **Environment-based CORS** (`FRONTEND_URL` env var — works for local & production)
 - [x] **Deployment-ready** — Vercel (frontend) + Render (backend) + `vercel.json` for SPA routing
+- [x] **AI Voice Agent (Zomi)** — LiveKit-powered voice assistant with dedicated read-only API routes for food discovery
 - [ ] Comments on food reels (Socket.io real-time)
 - [ ] Location-based restaurant filtering (geolocation)
 - [ ] Follow a restaurant — get notified on new reels
