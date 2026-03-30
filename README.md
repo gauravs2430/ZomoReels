@@ -740,13 +740,47 @@ The raw Mongoose documents contain internal fields like `__v`, `_id`, and the fu
 
 ---
 
-### Files Added for Agent Integration
+### Bug Fixes Applied for Agent Compatibility
 
-| File | Purpose |
-|---|---|
-| `backend/src/controllers/agent.controllers.js` | All agent endpoint logic — dynamic MongoDB queries, populate, response shaping |
-| `backend/src/routes/agent.routes.js` | Mounts agent routes at `/api/agent/*` |
-| `agent_prompt.md` | System prompt used to configure the Zomi agent persona in LiveKit |
+Three backend bugs were identified and fixed during the agent integration audit:
+
+#### Fix 1 — Open CORS for `/api/agent/*` routes
+
+The default CORS policy only allows requests from `process.env.FRONTEND_URL` (your React app). The LiveKit server is a completely different external server on the internet, so every agent API call would have been rejected before it could reach a controller.
+
+**Fix:** A separate, open CORS policy was added in `app.js` specifically for the `/api/agent` prefix, applied *before* the main restricted CORS middleware:
+
+```js
+// Allow any origin for agent routes (called by LiveKit, not the browser)
+app.use("/api/agent", cors({ origin: "*" }));
+
+// Restricted CORS for all other routes (browser only)
+app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
+```
+
+#### Fix 2 — Missing `foodpartnerModel` import in agent controller
+
+The `getRestaurants` controller used `foodpartnerModel` to query the database but that model was never imported at the top of the file. This would have thrown a `ReferenceError: foodpartnerModel is not defined` crash the first time any user asked the agent about restaurants.
+
+**Fix:** Added `const foodpartnerModel = require("../models/foodpartner.models");` to the imports.
+
+#### Fix 3 — Missing `timestamps` on `food.models.js`
+
+The food schema had no `{ timestamps: true }` option, so food documents had no `createdAt` or `updatedAt` fields. This prevented the agent from ever sorting results by newest. The user model had timestamps but the food model did not.
+
+**Fix:** Added `{ timestamps: true }` to the food schema options.
+
+---
+
+### Files Added / Modified for Agent Integration
+
+| File | Change | Purpose |
+|---|---|---|
+| `backend/src/controllers/agent.controllers.js` | **NEW** | All agent endpoint logic — dynamic MongoDB queries, populate, response shaping |
+| `backend/src/routes/agent.routes.js` | **NEW** | Mounts agent routes at `/api/agent/*` |
+| `backend/src/app.js` | **MODIFIED** | Added open CORS for `/api/agent/*` routes |
+| `backend/src/models/food.models.js` | **MODIFIED** | Added `timestamps: true` for `createdAt`/`updatedAt` support |
+| `agent_prompt.md` | **NEW** | System prompt used to configure the Zomi agent persona in LiveKit |
 
 ---
 
