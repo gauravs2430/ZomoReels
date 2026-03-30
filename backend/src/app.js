@@ -7,12 +7,18 @@ const agentRoutes = require("./routes/agent.routes");
 
 const app = express();
 
-// CORS — reads allowed origin from env variable.
-// Development: http://localhost:5173
-// Production:  https://your-app.vercel.app  (set in Render dashboard)
+// ─── CORS for AI Agent routes ──────────────────────────────────────────────
+// /api/agent/* routes are public read-only endpoints called by the LiveKit
+// agent server. That server is an external internet service, not our frontend,
+// so we must allow any origin for ONLY these routes.
+app.use("/api/agent", cors({ origin: "*" }));
+
+// ─── CORS for browser (frontend) routes ───────────────────────────────────
+// All other routes are only accessible from our configured frontend URL.
+// credentials: true is required so HttpOnly JWT cookies are sent with requests.
 app.use(cors({
   origin: process.env.FRONTEND_URL,
-  credentials: true,   // REQUIRED: allows cookies to be sent from the browser
+  credentials: true,
 }));
 
 app.use(cookieParser());

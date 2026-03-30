@@ -1,5 +1,5 @@
 const foodModel = require("../models/food.models");
-const foodPartnerModel = require("../models/foodpartner.models");
+const foodpartnerModel = require("../models/foodpartner.models");
 
 /**
  * GET /api/agent/recommendations
@@ -139,7 +139,7 @@ module.exports.getRestaurants = async (req, res) => {
         const query = andConditions.length > 0 ? { $and: andConditions } : {};
         const resultLimit = Math.min(Math.max(parseInt(limit, 10) || 5, 1), 10);
 
-        const partners = await foodPartnerModel
+        const partners = await foodpartnerModel
             .find(query, "fullname address phone contactName image")
             .limit(resultLimit);
 
