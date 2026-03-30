@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@livekit/agents": "^1.2.1",
     "cors": "^2.8.6",
     "zod": "^4.3.6"
   }
