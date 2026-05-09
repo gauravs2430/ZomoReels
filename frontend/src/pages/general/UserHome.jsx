@@ -1,65 +1,180 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import "../../styles/userHome.css";
 import axiosInstance from '../../api/axiosInstance';
 import { useNavigate } from "react-router-dom";
 
-// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//  MuteIcon / UnmuteIcon  (inline SVG — no external dep)
+// ─────────────────────────────────────────────────────────────────────────────
+const MuteIcon = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M11 5 6 9H2v6h4l5 4V5z"/>
+        <line x1="23" y1="9" x2="17" y2="15"/>
+        <line x1="17" y1="9" x2="23" y2="15"/>
+    </svg>
+);
+
+const UnmuteIcon = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+    </svg>
+);
+
+const HeartIcon = ({ filled }) => (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill={filled ? "#ff4d6d" : "none"} stroke={filled ? "#ff4d6d" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+);
+
+const BookmarkIcon = ({ filled }) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill={filled ? "#FFD600" : "none"} stroke={filled ? "#FFD600" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+    </svg>
+);
+
+const ShareIcon = () => (
+    <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="18" cy="5" r="3"/>
+        <circle cx="6" cy="12" r="3"/>
+        <circle cx="18" cy="19" r="3"/>
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+    </svg>
+);
+
+const HomeIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+);
+
+const SavedNavIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+    </svg>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  formatCount  — "1200" → "1.2K", "1000000" → "1M"
+// ─────────────────────────────────────────────────────────────────────────────
+function formatCount(n) {
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (n >= 1_000)     return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+    return String(n);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  TagBadge
+// ─────────────────────────────────────────────────────────────────────────────
+const TagBadge = ({ tag }) => (
+    <span className="tag-badge">#{tag}</span>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  VideoCard
-//  Renders a single full-screen reel with like, comment, save actions.
-//  Props: video (food doc), isActive, toggleMute, isMuted
-// ─────────────────────────────────────────────────────────────
-const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
+//  Renders one full-screen reel with all premium interactions.
+// ─────────────────────────────────────────────────────────────────────────────
+const VideoCard = ({ video, isActive, isMuted, onMuteToggle }) => {
     const videoRef = useRef(null);
     const navigate = useNavigate();
+
     const [isTruncated, setIsTruncated] = useState(true);
+    const [liked,  setLiked]  = useState(false);
+    const [likes,  setLikes]  = useState(video.likeCount || 0);
+    const [saved,  setSaved]  = useState(false);
+    const [showTap, setShowTap] = useState(false);
+    const [showLikeAnim, setShowLikeAnim] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const tapTimer = useRef(null);
+    const lastTap  = useRef(0);
 
-    // Like: tracks whether this user liked this reel + running count from DB
-    const [liked, setLiked] = useState(false);
-    const [likes, setLikes] = useState(video.likeCount || 0);
-
-    // Save: tracks whether this user bookmarked this reel
-    const [saved, setSaved] = useState(false);
-
-    // Auto-play / pause when scrolled in/out of view
+    // ── Auto-play / pause ────────────────────────────────────────────────────
     useEffect(() => {
+        const el = videoRef.current;
+        if (!el) return;
         if (isActive) {
-            videoRef.current.currentTime = 0;
-            videoRef.current.play().catch(err => console.log("Autoplay prevented:", err));
+            el.currentTime = 0;
+            el.play().catch(() => {});
         } else {
-            videoRef.current.pause();
+            el.pause();
         }
     }, [isActive]);
 
-    // POST /api/food/like { foodId } — toggles like, updates count on food doc
+    // ── Sync muted state ─────────────────────────────────────────────────────
+    useEffect(() => {
+        if (videoRef.current) videoRef.current.muted = isMuted;
+    }, [isMuted]);
+
+    // ── Progress bar ─────────────────────────────────────────────────────────
+    const handleTimeUpdate = useCallback(() => {
+        const el = videoRef.current;
+        if (!el || !el.duration) return;
+        setProgress((el.currentTime / el.duration) * 100);
+    }, []);
+
+    // ── Like ─────────────────────────────────────────────────────────────────
     const handleLike = async (e) => {
-        e.stopPropagation();
+        e?.stopPropagation?.();
         const wasLiked = liked;
-        setLiked(!wasLiked);
-        setLikes(prev => wasLiked ? prev - 1 : prev + 1);
+        setLiked(l => !l);
+        setLikes(n => wasLiked ? n - 1 : n + 1);
+        if (!wasLiked) {
+            setShowLikeAnim(true);
+            setTimeout(() => setShowLikeAnim(false), 900);
+        }
         try {
             await axiosInstance.post("/api/food/like", { foodId: video._id });
-        } catch (err) {
-            console.error("Like failed:", err);
+        } catch {
             setLiked(wasLiked);
-            setLikes(prev => wasLiked ? prev + 1 : prev - 1);
+            setLikes(n => wasLiked ? n + 1 : n - 1);
         }
     };
 
-    // POST /api/food/save { foodId } — creates or deletes a save document
+    // ── Save ─────────────────────────────────────────────────────────────────
     const handleSave = async (e) => {
-        e.stopPropagation();
+        e?.stopPropagation?.();
         const wasSaved = saved;
-        setSaved(!wasSaved);
+        setSaved(s => !s);
         try {
             await axiosInstance.post("/api/food/save", { foodId: video._id });
-        } catch (err) {
-            console.error("Save failed:", err);
+        } catch {
             setSaved(wasSaved);
         }
     };
 
+    // ── Double-tap to like ───────────────────────────────────────────────────
+    const handleVideoTap = () => {
+        const now = Date.now();
+        if (now - lastTap.current < 300) {
+            clearTimeout(tapTimer.current);
+            handleLike();
+        } else {
+            tapTimer.current = setTimeout(() => onMuteToggle(), 250);
+            setShowTap(true);
+            setTimeout(() => setShowTap(false), 600);
+        }
+        lastTap.current = now;
+    };
+
+    // ── Share (Web Share API → fallback clipboard) ────────────────────────────
+    const handleShare = async (e) => {
+        e.stopPropagation();
+        const shareData = { title: video.foodname, text: video.description, url: window.location.href };
+        if (navigator.share) {
+            await navigator.share(shareData).catch(() => {});
+        } else {
+            await navigator.clipboard.writeText(window.location.href).catch(() => {});
+        }
+    };
+
+    const tags = video.tags?.slice(0, 3) || [];
+
     return (
         <div className="video-card">
+            {/* Video element */}
             <video
                 ref={videoRef}
                 className="video-player"
@@ -67,205 +182,258 @@ const VideoCard = ({ video, isActive, toggleMute, isMuted }) => {
                 loop
                 muted={isMuted}
                 playsInline
-                onClick={toggleMute}
+                onTimeUpdate={handleTimeUpdate}
+                onClick={handleVideoTap}
+                preload="metadata"
             />
 
-            {/* Bottom-left gradient overlay: dish name, description, Visit Store */}
+            {/* Double-tap ripple */}
+            {showTap && <div className="tap-ripple"><div className="tap-ring" /></div>}
+
+            {/* Double-tap like burst */}
+            {showLikeAnim && (
+                <div className="like-burst" aria-hidden>❤️</div>
+            )}
+
+            {/* Progress bar */}
+            <div className="video-progress-bar">
+                <div className="video-progress-fill" style={{ width: `${progress}%` }} />
+            </div>
+
+            {/* Top bar: mute toggle + ZomoReels brand */}
+            <div className="top-bar">
+                <div className="brand-pill">
+                    <span className="brand-dot" />
+                    ZomoReels
+                </div>
+                <button
+                    className="mute-btn"
+                    onClick={(e) => { e.stopPropagation(); onMuteToggle(); }}
+                    aria-label={isMuted ? "Unmute" : "Mute"}
+                >
+                    {isMuted ? <MuteIcon /> : <UnmuteIcon />}
+                </button>
+            </div>
+
+            {/* Bottom-left info overlay */}
             <div className="video-overlay">
                 <div className="store-info">
+                    {/* Tags row */}
+                    {tags.length > 0 && (
+                        <div className="tags-row">
+                            {tags.map(t => <TagBadge key={t} tag={t} />)}
+                        </div>
+                    )}
+
                     <h3 className="store-name">{video.foodname}</h3>
+
                     <p
                         className={`video-description ${isTruncated ? 'truncated' : ''}`}
-                        onClick={() => setIsTruncated(!isTruncated)}
+                        onClick={(e) => { e.stopPropagation(); setIsTruncated(t => !t); }}
                     >
                         {video.description}
+                        {isTruncated && <span className="read-more"> more</span>}
                     </p>
-                    <button className="visit-store-btn" onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/restaurant/${video.foodpartner}`);
-                    }}>
-                        Visit Store →
+
+                    <button
+                        className="visit-store-btn"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/restaurant/${video.foodpartner}`);
+                        }}
+                    >
+                        🍽️ &nbsp;Visit Restaurant
                     </button>
                 </div>
             </div>
 
-            {/* Right sidebar — outside overlay, positioned absolute to video-card */}
+            {/* Right sidebar actions */}
             <div className="sidebar-actions">
                 {/* Like */}
-                <div className={`action-btn ${liked ? 'liked' : ''}`} onClick={handleLike}>
-                    <span className="action-icon">{liked ? '❤️' : '🤍'}</span>
-                    <span className="action-label">{likes}</span>
+                <div
+                    className={`action-item ${liked ? 'liked' : ''}`}
+                    onClick={handleLike}
+                    role="button"
+                    aria-label="Like"
+                >
+                    <div className="action-circle">
+                        <HeartIcon filled={liked} />
+                    </div>
+                    <span className="action-count">{formatCount(likes)}</span>
                 </div>
-                {/* Comment placeholder */}
-                <div className="action-btn">
-                    <span className="action-icon">💬</span>
+
+                {/* Comment (placeholder — future feature) */}
+                <div className="action-item" role="button" aria-label="Comment">
+                    <div className="action-circle">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    </div>
+                    <span className="action-count">Chat</span>
                 </div>
+
                 {/* Save */}
-                <div className={`action-btn ${saved ? 'saved' : ''}`} onClick={handleSave}>
-                    <span className="action-icon">{saved ? '🔖' : '🏷️'}</span>
-                    <span className="action-label">{saved ? 'Saved' : 'Save'}</span>
+                <div
+                    className={`action-item ${saved ? 'saved' : ''}`}
+                    onClick={handleSave}
+                    role="button"
+                    aria-label="Save"
+                >
+                    <div className="action-circle">
+                        <BookmarkIcon filled={saved} />
+                    </div>
+                    <span className="action-count">{saved ? 'Saved' : 'Save'}</span>
+                </div>
+
+                {/* Share */}
+                <div className="action-item" role="button" aria-label="Share" onClick={handleShare}>
+                    <div className="action-circle">
+                        <ShareIcon />
+                    </div>
+                    <span className="action-count">Share</span>
                 </div>
             </div>
         </div>
-
     );
 };
 
-// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//  LoadingSkeleton — shown while reels are fetching
+// ─────────────────────────────────────────────────────────────────────────────
+const LoadingSkeleton = () => (
+    <div className="loading-skeleton">
+        <div className="skeleton-shimmer" />
+        <div className="loading-brand">
+            <div className="loading-logo">🍜</div>
+            <p className="loading-text">Loading your reels…</p>
+        </div>
+    </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  SavedFeed
-//  Shown when user taps the "Saved" tab.
-//  Fetches GET /api/food/saved → renders reels in a vertical feed.
-// ─────────────────────────────────────────────────────────────
-const SavedFeed = () => {
+// ─────────────────────────────────────────────────────────────────────────────
+const SavedFeed = ({ isMuted, onMuteToggle }) => {
     const [savedVideos, setSavedVideos] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [activeId, setActiveId] = useState(null);
-    const [isMuted, setIsMuted] = useState(true);
+    const [loading,     setLoading]     = useState(true);
+    const [activeId,    setActiveId]    = useState(null);
 
     useEffect(() => {
-        const fetchSaved = async () => {
-            try {
-                // GET /api/food/saved — requires user auth cookie
-                // Returns { savedItems: [...food docs] }
-                const res = await axiosInstance.get("/api/food/saved");
-                if (res.data?.savedItems) {
-                    setSavedVideos(res.data.savedItems);
-                    if (res.data.savedItems.length > 0) {
-                        setActiveId(res.data.savedItems[0]._id);
-                    }
-                }
-            } catch (err) {
-                console.error("Failed to fetch saved reels:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchSaved();
+        axiosInstance.get("/api/food/saved")
+            .then(res => {
+                const items = res.data?.savedItems ?? [];
+                setSavedVideos(items);
+                if (items.length) setActiveId(items[0]._id);
+            })
+            .catch(console.error)
+            .finally(() => setLoading(false));
     }, []);
 
     const handleScroll = (e) => {
-        const index = Math.round(e.target.scrollTop / e.target.clientHeight);
-        if (savedVideos[index] && savedVideos[index]._id !== activeId) {
-            setActiveId(savedVideos[index]._id);
-        }
+        const idx = Math.round(e.target.scrollTop / e.target.clientHeight);
+        if (savedVideos[idx]?._id !== activeId) setActiveId(savedVideos[idx]?._id);
     };
 
-    if (loading) return <div className="loading-state">Loading saved reels...</div>;
-    if (savedVideos.length === 0) return (
+    if (loading) return <LoadingSkeleton />;
+    if (!savedVideos.length) return (
         <div className="empty-state">
-            <div className="empty-state-icon">🏷️</div>
-            <h2 className="empty-state-title">Nothing saved yet</h2>
-            <p className="empty-state-sub">Tap the bookmark icon on any reel to save it here.</p>
+            <div className="empty-icon">🏷️</div>
+            <h2>Nothing saved yet</h2>
+            <p>Tap the bookmark on any reel to save it here.</p>
         </div>
     );
 
     return (
-        <div className="video-feed-container saved-feed" onScroll={handleScroll}>
-            {savedVideos.map(video => (
+        <div className="video-feed-container" onScroll={handleScroll}>
+            {savedVideos.map(v => (
                 <VideoCard
-                    key={video._id}
-                    video={video}
-                    isActive={video._id === activeId}
-                    toggleMute={() => setIsMuted(m => !m)}
+                    key={v._id}
+                    video={v}
+                    isActive={v._id === activeId}
                     isMuted={isMuted}
+                    onMuteToggle={onMuteToggle}
                 />
             ))}
         </div>
     );
 };
 
-// ─────────────────────────────────────────────────────────────
-//  UserHome
-//  Main page with two tabs controlled by a bottom nav bar:
-//    🏠 Home  → vertial reel feed (all reels)
-//    🔖 Saved → saved reels feed (user's bookmarks)
-// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//  UserHome — root component
+// ─────────────────────────────────────────────────────────────────────────────
 const UserHome = () => {
-    // 'home' | 'saved' — controls which tab/feed is visible
-    const [activeTab, setActiveTab] = useState('home');
-
-    const [videos, setVideos] = useState([]);
+    const [activeTab,     setActiveTab]     = useState('home');
+    const [videos,        setVideos]        = useState([]);
     const [activeVideoId, setActiveVideoId] = useState(null);
-    const [isMuted, setIsMuted] = useState(true);
-    const [loaded, setLoaded] = useState(false);
+    const [isMuted,       setIsMuted]       = useState(true);
+    const [loaded,        setLoaded]        = useState(false);
 
     useEffect(() => {
-        const fetchVideos = async () => {
-            try {
-                // GET /api/food/getItem → { foodItem: [...] }
-                // Each food doc includes likeCount (added to food.models.js)
-                const response = await axiosInstance.get("/api/food/getItem");
-                if (response.data?.foodItem) {
-                    setVideos(response.data.foodItem);
-                    if (response.data.foodItem.length > 0) {
-                        setActiveVideoId(response.data.foodItem[0]._id);
-                    }
-                }
-            } catch (error) {
-                console.error("Error fetching videos:", error);
-            } finally {
-                setLoaded(true);
-            }
-        };
-        fetchVideos();
+        axiosInstance.get("/api/food/getItem")
+            .then(res => {
+                const items = res.data?.foodItem ?? [];
+                setVideos(items);
+                if (items.length) setActiveVideoId(items[0]._id);
+            })
+            .catch(console.error)
+            .finally(() => setLoaded(true));
     }, []);
 
     const handleScroll = (e) => {
-        const index = Math.round(e.target.scrollTop / e.target.clientHeight);
-        if (videos[index] && videos[index]._id !== activeVideoId) {
-            setActiveVideoId(videos[index]._id);
-        }
+        const idx = Math.round(e.target.scrollTop / e.target.clientHeight);
+        if (videos[idx]?._id !== activeVideoId) setActiveVideoId(videos[idx]?._id);
     };
+
+    const toggleMute = useCallback(() => setIsMuted(m => !m), []);
 
     return (
         <div className="user-home-wrapper">
-            {/* ── Main Content ─────────────────────────────── */}
+            {/* ── Feed Area ─────────────────────────────────── */}
             <div className="feed-area">
                 {activeTab === 'home' ? (
-                    /* HOME TAB: full reel feed */
-                    <div className="video-feed-container" onScroll={handleScroll}>
-                        {!loaded ? (
-                            <div className="loading-state">Loading delicious feed...</div>
-                        ) : videos.length === 0 ? (
-                            <div className="empty-state">
-                                <div className="empty-state-icon">🍽️</div>
-                                <h2 className="empty-state-title">No reels yet</h2>
-                                <p className="empty-state-sub">Food partners haven't uploaded any reels yet.<br />Check back soon!</p>
-                            </div>
-                        ) : (
-                            videos.map(video => (
+                    !loaded ? (
+                        <LoadingSkeleton />
+                    ) : videos.length === 0 ? (
+                        <div className="empty-state">
+                            <div className="empty-icon">🍽️</div>
+                            <h2>No reels yet</h2>
+                            <p>Food partners haven't posted any reels yet. Check back soon!</p>
+                        </div>
+                    ) : (
+                        <div className="video-feed-container" onScroll={handleScroll}>
+                            {videos.map(v => (
                                 <VideoCard
-                                    key={video._id}
-                                    video={video}
-                                    isActive={video._id === activeVideoId}
-                                    toggleMute={() => setIsMuted(m => !m)}
+                                    key={v._id}
+                                    video={v}
+                                    isActive={v._id === activeVideoId}
                                     isMuted={isMuted}
+                                    onMuteToggle={toggleMute}
                                 />
-                            ))
-                        )}
-                    </div>
+                            ))}
+                        </div>
+                    )
                 ) : (
-                    /* SAVED TAB: user's bookmarked reels */
-                    <SavedFeed />
+                    <SavedFeed isMuted={isMuted} onMuteToggle={toggleMute} />
                 )}
             </div>
 
-            {/* ── Bottom Navigation Bar ────────────────────── */}
-            {/* Two tabs: Home (all reels) and Saved (bookmarked reels) */}
+            {/* ── Bottom Navigation ─────────────────────────── */}
             <nav className="bottom-nav">
                 <button
+                    id="home-tab-btn"
                     className={`bottom-nav-btn ${activeTab === 'home' ? 'active' : ''}`}
                     onClick={() => setActiveTab('home')}
                 >
-                    <span className="bottom-nav-icon">🏠</span>
-                    <span className="bottom-nav-label">Home</span>
+                    <span className="bnav-icon"><HomeIcon /></span>
+                    <span className="bnav-label">Home</span>
                 </button>
                 <button
+                    id="saved-tab-btn"
                     className={`bottom-nav-btn ${activeTab === 'saved' ? 'active' : ''}`}
                     onClick={() => setActiveTab('saved')}
                 >
-                    <span className="bottom-nav-icon">🔖</span>
-                    <span className="bottom-nav-label">Saved</span>
+                    <span className="bnav-icon"><SavedNavIcon /></span>
+                    <span className="bnav-label">Saved</span>
                 </button>
             </nav>
         </div>
