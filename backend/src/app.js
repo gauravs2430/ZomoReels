@@ -17,7 +17,18 @@ app.use("/api/agent", cors({ origin: "*" }));
 // All other routes are only accessible from our configured frontend URL.
 // credentials: true is required so HttpOnly JWT cookies are sent with requests.
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin: function (origin, callback) {
+    const frontendUrl = process.env.FRONTEND_URL;
+    // Allow requests with no origin (like mobile apps, curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow the configured frontend URL or any Vercel preview deployment
+    if (origin === frontendUrl || origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 
